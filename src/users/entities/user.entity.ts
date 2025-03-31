@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+
+export type UserRole = 'admin' | 'vendedor' | 'comprador';
 
 @Entity('usuarios')
 export class User {
@@ -14,6 +16,9 @@ export class User {
     @Column({ length: 255 })
     contrasena: string;
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     fecha_registro: Date;
+
+    @Column({ default: 'vendedor', type: 'enum', enum: ['admin', 'vendedor', 'comprador'] })
+    rol: UserRole;
 }
