@@ -19,8 +19,22 @@ export class UsersService {
 
   // Obtener todos los usuarios de la tabla "usuarios"
   async findAll(): Promise<User[]> {
-    return await this.usersRepository.find();
+
+    let users = await this.usersRepository.find({
+      relations: ['rol'],
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        fecha_registro: true,
+        rol: { id: true, descripcion: true }, // Incluir solo lo necesario del rol
+      },
+    });
+
+    console.log(users);
+    return users;
   }
+
 
   findOne(id: number) {
     return `This action returns a #${id} user`;
