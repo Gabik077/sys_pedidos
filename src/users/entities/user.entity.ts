@@ -1,24 +1,31 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    ManyToOne,
+    JoinColumn,
+} from "typeorm";
+import { Role } from "./role.entity"; // Asegúrate de que la ruta sea correcta
 
-export type UserRole = 'admin' | 'vendedor' | 'comprador';
-
-@Entity('usuarios')
+@Entity("usuarios")
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ length: 100 })
+    @Column({ type: "varchar", length: 100, nullable: false })
     nombre: string;
 
-    @Column({ length: 100, unique: true })
+    @Column({ type: "varchar", length: 100, unique: true, nullable: false })
     email: string;
 
-    @Column({ length: 255 })
+    @Column({ type: "varchar", length: 255, nullable: false })
     contrasena: string;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     fecha_registro: Date;
 
-    @Column({ default: 'vendedor', type: 'enum', enum: ['admin', 'vendedor', 'comprador'] })
-    rol: UserRole;
+    @ManyToOne(() => Role, (role) => role.id, { nullable: false })
+    @JoinColumn({ name: "rol" }) // Define la clave foránea
+    rol: Role;
 }
