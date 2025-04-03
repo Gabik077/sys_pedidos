@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { Rol } from './entities/role.entity';
 
 @Injectable()
 export class UsersService {
@@ -11,40 +12,98 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectDataSource()
+    readonly dataSource: DataSource,
+    @InjectRepository(Rol)
+    private rolesRepository: Repository<Rol>
   ) { }
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+
+    try {
+      const existingUser = await this.usersRepository.findOne({
+        where: [
+          { email: createUserDto.email },
+          { username: createUserDto.username }
+        ],
+      });
+
+
+      if (existingUser) {
+        return { status: "error", message: "El usuario ya existe" };
+      }
+
+      const newUser = await this.usersRepository.create(createUserDto);
+      await this.usersRepository.save(newUser)
+    }
+    catch (error) {
+      console.error("Error al crear el usuario:", error);
+      return { status: "error", message: "Error al verificar el usuario" };
+    }
+
+
+    return { status: "ok", message: "Usuario creado exitosamente" };
   }
 
   // Obtener todos los usuarios de la tabla "usuarios"
   async findAll(): Promise<User[]> {
 
-    let users = await this.usersRepository.find({
+    const users = await this.usersRepository.find({
       relations: ['rol'],
       select: {
         id: true,
         nombre: true,
         email: true,
         fecha_registro: true,
-        rol: { id: true, descripcion: true }, // Incluir solo lo necesario del rol
+        rol: { descripcion: true },
       },
     });
 
-    console.log(users);
     return users;
   }
 
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async getRoles(): Promise<Rol[]> {
+    return this.rolesRepository.find();
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+
+  findOne(id: number): Promise<User> {
+    return this.usersRepository.findOne({
+      where: { id }
+    });
+  }
+  // Actualizar un usuario
+  async update(id: number, updateUserDto: UpdateUserDto) {
+
+    try {
+      const existingUser = await this.usersRepository.findOne({
+        where: [{ id }], // Verifica si el usuario existe
+      });
+      if (!existingUser) {
+        return { status: "error", message: "El usuario no existe" };
+      }
+
+      await this.usersRepository.update(id, updateUserDto);
+
+    } catch (error) {
+      console.error("Error al verificar el usuario:", error);
+      return { status: "error", message: "Error al verificar el usuario" };
+    }
+
+
+
+    return { status: "ok", message: "Usuario actualizado exitosamente" };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    console.log("ID a borrar:", id);
+    const user = await this.usersRepository.delete(id);
+
+
+    if (user.affected === 0) {
+      return { status: "error", message: "no se pudo borrar el usuario" };
+    }
+
+    return { status: "ok", message: "borrado exitoso" };
   }
 }
