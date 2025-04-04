@@ -69,6 +69,14 @@ export class UsersService {
 
   findOne(id: number): Promise<User> {
     return this.usersRepository.findOne({
+      relations: ['rol'],
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        fecha_registro: true,
+        rol: { descripcion: true, id: true },
+      },
       where: { id }
     });
   }
@@ -96,9 +104,7 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    console.log("ID a borrar:", id);
     const user = await this.usersRepository.delete(id);
-
 
     if (user.affected === 0) {
       return { status: "error", message: "no se pudo borrar el usuario" };
