@@ -9,7 +9,12 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(), // Carga las variables de entorno desde .env
+    ConfigModule.forRoot(
+      {
+        isGlobal: true,
+        envFilePath: '.env',
+      }
+    ),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',

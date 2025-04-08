@@ -1,18 +1,29 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { User } from 'src/users/entities/user.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'fadsfadf', // En producción, usar una variable de entorno
-      signOptions: { expiresIn: '6h' }, // duración del token
+    ConfigModule,
+    TypeOrmModule.forFeature([User]),
+
+    JwtModule.registerAsync({
+      imports: [ConfigModule], // Necesario para poder inyectar ConfigService
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: '6h',
+        },
+      }),
     }),
-    TypeOrmModule.forFeature([User])],
+  ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
   exports: [JwtModule],
