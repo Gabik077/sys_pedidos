@@ -28,7 +28,7 @@ export class AuthService {
                 }
             }
         });
-
+        console.log(user);
         if (user) {
 
             const payload = { sub: user.id, username: user.username, role: user.rol.descripcion };
