@@ -1,14 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as cookieParser from 'cookie-parser';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // Habilitar CORS para permitir solicitudes desde cualquier origen
+  app.use(cookieParser());
   app.enableCors({
-    origin: '*',  // Permite solicitudes desde cualquier origen
-    methods: 'GET,POST,PUT,DELETE,OPTIONS,PATH',  // Métodos permitidos
-    allowedHeaders: 'Content-Type, Authorization',  // Encabezados permitidos
+    origin: 'http://localhost:3000',
+    methods: 'GET,POST,PUT,DELETE,OPTIONS,PATH',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true,
   });
 
 

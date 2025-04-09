@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
         private usersRepository: Repository<User>,
     ) { }
 
-    async login(username: string, password: string) {
+    async login(username: string, password: string, res: Response) {
 
         const user = await this.usersRepository.findOne({
             where: {
@@ -28,11 +28,19 @@ export class AuthService {
                 }
             }
         });
-        console.log(user);
-        if (user) {
 
+        if (user) {
             const payload = { sub: user.id, username: user.username, role: user.rol.descripcion };
             const token = await this.jwtService.sign(payload);
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                path: '/',
+                sameSite: 'lax', // recomendado
+            });
+
+
             return { status: "ok", message: "Login exitoso", token: token };
 
         }

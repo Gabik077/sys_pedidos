@@ -11,14 +11,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         private configService: ConfigService
     ) {
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // lee el token del header Authorization
+            jwtFromRequest: ExtractJwt.fromExtractors([
+                // Extrae el token del header Authorization (Bearer token)
+                ExtractJwt.fromAuthHeaderAsBearerToken(),
+
+                // Extrae el token de la cookie, si está presente
+                (req) => req?.cookies?.token || null, // lee el token de la cookie
+            ]),
             ignoreExpiration: false,
             secretOrKey: configService.get<string>('JWT_SECRET'),
         });
     }
 
     async validate(payload: any) {
-        // El resultado de esto se inyecta en el req.user
+        // El resultado de esto se inyecta en req.user
         return { userId: payload.sub, username: payload.username, role: payload.role };
     }
 }
