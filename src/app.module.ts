@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -24,11 +25,12 @@ import { UsersModule } from './users/users.module';
         password: config.get<string>('DB_PASS', 'password'),
         database: config.get<string>('DB_NAME', 'test_db'),
         autoLoadEntities: true,
-        synchronize: true, // ⚠️ Solo para desarrollo
+        synchronize: false, // true Solo para desarrollo
       }),
     }),
     AuthModule,
     UsersModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
