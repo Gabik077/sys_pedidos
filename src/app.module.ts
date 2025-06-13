@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
+import { Product } from './products/entities/product.entity';
+import { UnidadMedida } from './products/entities/unidad.entity';
 
 @Module({
   imports: [
@@ -26,6 +28,10 @@ import { ProductsModule } from './products/products.module';
         database: config.get<string>('DB_NAME', 'test_db'),
         autoLoadEntities: true,
         synchronize: false, // true Solo para desarrollo
+        entities: [
+          Product,
+          UnidadMedida,
+        ],
       }),
     }),
     AuthModule,

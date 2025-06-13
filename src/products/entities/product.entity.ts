@@ -6,6 +6,7 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
+import { UnidadMedida } from './unidad.entity';
 
 @Entity('productos')
 export class Product {
@@ -43,9 +44,6 @@ export class Product {
     id_empresa?: number;
 
     @Column({ nullable: true })
-    id_unidad?: number;
-
-    @Column({ nullable: true })
     id_categoria?: number;
 
     @Column({ nullable: true })
@@ -66,8 +64,7 @@ export class Product {
     @Column({ length: 50, nullable: true })
     foto_path?: string;
 
-    // Relaciones (opcional, si defines entidades relacionadas)
-    // @ManyToOne(() => CategoriaProducto)
-    // @JoinColumn({ name: 'id_categoria' })
-    // categoria: CategoriaProducto;
+    @ManyToOne(() => UnidadMedida, (unidad) => unidad.products, { nullable: false })
+    @JoinColumn({ name: "id_unidad" }) // FK en DB
+    unidad: UnidadMedida;
 }

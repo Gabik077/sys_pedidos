@@ -4,6 +4,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
+
 
 @Injectable()
 export class ProductsService {
@@ -18,10 +20,10 @@ export class ProductsService {
     return 'This action adds a new product';
   }
 
-  async findAll()
-    : Promise<Product[]> {
+  async findAll(): Promise<Product[]> {
 
     const product = await this.productRepository.find({
+      where: { estado: "activo" },
       select: {
         id: true,
         nombre: true,
@@ -35,9 +37,39 @@ export class ProductsService {
 
 
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: number): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      relations: ['unidad'],
+      where: { id },
+      select: {
+        id: true,
+        nombre: true,
+        descripcion: true,
+        precio_venta: true,
+        stock_minimo: true,
+        estado: true,
+        codigo_barra: true,
+        marca: true,
+        id_moneda: true,
+        id_categoria: true,
+        id_proveedor: true,
+        codigo_interno: true,
+        precio_compra: true,
+        unidad: {
+          id: true,
+          nombre: true,
+          simbolo: true,
+        }
+      },
+    });
+    if (!product) {
+      throw new NotFoundException(`Producto con id ${id} no encontrado`);
+    }
+
+    return product;
   }
+
+
 
   update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
