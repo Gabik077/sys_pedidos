@@ -6,11 +6,20 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/auth/roles.enum';
 import { RolesGuard } from 'src/auth/roles.guard';
+import { UnidadesDto } from './dto/unidades.dto';
 
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Comprador, Role.Vendedor)
+  @Get('unidades')
+  getUnidades(): Promise<UnidadesDto[]> {
+
+    return this.productsService.getUnidades();
+  }
 
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
@@ -38,4 +47,7 @@ export class ProductsController {
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
   }
+
+
+
 }
