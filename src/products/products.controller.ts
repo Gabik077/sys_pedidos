@@ -28,6 +28,13 @@ export class ProductsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador, Role.Vendedor)
+  @Get('proveedores')
+  getProveedores() {
+    return this.productsService.getProveedores();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Comprador, Role.Vendedor)
   @Get()
   findAll() {
     return this.productsService.findAll();

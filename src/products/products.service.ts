@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { UnidadMedida } from './entities/unidad.entity';
 import { UnidadesDto } from './dto/unidades.dto';
+import { Proveedor } from './entities/proveedor.entity';
 
 
 @Injectable()
@@ -16,12 +17,27 @@ export class ProductsService {
     private productRepository: Repository<Product>,
     @InjectRepository(UnidadMedida)
     private unidadesRepository: Repository<UnidadMedida>,
+    @InjectRepository(Proveedor)
+    private proveedoresRepository: Repository<Proveedor>,
   ) { }
 
 
 
   create(createProductDto: CreateProductDto) {
     return 'This action adds a new product';
+  }
+
+  async getProveedores(): Promise<Proveedor[]> {
+
+    const proveedores = await this.proveedoresRepository.find({
+      select: {
+        id: true,
+        nombre: true,
+      },
+    });
+
+    return proveedores;
+
   }
 
   async getUnidades(): Promise<UnidadesDto[]> {
