@@ -7,6 +7,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { UnidadMedida } from './unidad.entity';
+import { Proveedor } from './proveedor.entity';
 
 @Entity('productos')
 export class Product {
@@ -67,4 +68,8 @@ export class Product {
     @ManyToOne(() => UnidadMedida, (unidad) => unidad.products, { nullable: false })
     @JoinColumn({ name: "id_unidad" }) // FK en DB
     unidad: UnidadMedida;
+
+    @ManyToOne(() => Proveedor, (proveedor) => proveedor.products, { nullable: false })
+    @JoinColumn({ name: "id_unidad" }) // FK en DB
+    proveedor: Proveedor;
 }

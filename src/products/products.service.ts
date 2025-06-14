@@ -6,6 +6,7 @@ import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { UnidadMedida } from './entities/unidad.entity';
+import { UnidadesDto } from './dto/unidades.dto';
 
 
 @Injectable()
@@ -23,7 +24,7 @@ export class ProductsService {
     return 'This action adds a new product';
   }
 
-  async getUnidades(): Promise<UnidadMedida[]> {
+  async getUnidades(): Promise<UnidadesDto[]> {
 
     const unidades = await this.unidadesRepository.find({
       select: {
@@ -57,7 +58,7 @@ export class ProductsService {
 
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
-      relations: ['unidad'],
+      relations: ['unidad', 'proveedor'],
       where: { id },
       select: {
         id: true,
@@ -77,8 +78,12 @@ export class ProductsService {
           id: true,
           nombre: true,
           simbolo: true,
+        },
+        proveedor: {
+          id: true,
+          nombre: true,
         }
-      },
+      }
     });
     if (!product) {
       throw new NotFoundException(`Producto con id ${id} no encontrado`);
