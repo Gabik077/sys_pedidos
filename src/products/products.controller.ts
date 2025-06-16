@@ -21,6 +21,8 @@ export class ProductsController {
     return this.productsService.getUnidades();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Comprador, Role.Vendedor)
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);

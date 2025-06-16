@@ -25,6 +25,7 @@ export class CreateProductDto {
 
     @IsOptional()
     @IsString()
+    @IsIn(['activo', 'inactivo'])
     estado?: string;
 
     @IsInt()

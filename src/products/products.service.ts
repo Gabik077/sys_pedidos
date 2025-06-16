@@ -23,8 +23,12 @@ export class ProductsService {
 
 
 
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  async create(createProductDto: CreateProductDto) {
+
+    const product = this.productRepository.create(createProductDto);
+    await this.productRepository.save(product);
+
+    return { status: "ok", message: "Producto actualizado exitosamente" };
   }
 
   async getProveedores(): Promise<Proveedor[]> {
