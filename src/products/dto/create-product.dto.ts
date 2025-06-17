@@ -35,6 +35,7 @@ export class CreateProductDto {
     @IsString()
     codigo_interno?: string;
 
+    @IsOptional()
     @IsInt()
     id_empresa?: number;
 
