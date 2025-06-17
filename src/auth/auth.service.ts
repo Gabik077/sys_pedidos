@@ -30,7 +30,7 @@ export class AuthService {
         });
 
         if (user) {
-            const payload = { sub: user.id, username: user.username, role: user.rol.descripcion };
+            const payload = { sub: user.id, username: user.username, role: user.rol.descripcion, id_empresa: user.empresa_id };
             const token = await this.jwtService.sign(payload);
 
             res.cookie('token', token, {

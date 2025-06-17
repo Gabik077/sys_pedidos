@@ -23,12 +23,13 @@ export class ProductsService {
 
 
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, id_empresa: number) {
 
     const product = this.productRepository.create({
       ...createProductDto,
       unidad: { id: createProductDto.id_unidad },
       proveedor: { id: createProductDto.id_proveedor },
+      id_empresa: id_empresa,
     });
     await this.productRepository.save(product);
 
@@ -119,16 +120,17 @@ export class ProductsService {
 
 
 
-  async update(id: number, updateProductDto: UpdateProductDto) {
+  async update(id: number, updateProductDto: UpdateProductDto, id_empresa: number) {
     const product = await this.productRepository.findOne({ where: { id } });
     if (!product) {
       return { status: "error", message: "Producto no encontrado" };
     }
     try {
-      console.log("Actualizando producto con ID:", id, "Datos:", updateProductDto);
       await this.productRepository.update(id, {
         ...updateProductDto,
         unidad: { id: updateProductDto.unidad }, // <-- importante
+        proveedor: { id: updateProductDto.id_proveedor }, // <-- importante
+        id_empresa: id_empresa, // Mantener la empresa si no se proporciona
       });
 
     } catch (error) {
