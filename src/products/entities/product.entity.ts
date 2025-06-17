@@ -65,11 +65,12 @@ export class Product {
     @Column({ length: 50, nullable: true })
     foto_path?: string;
 
+
     @ManyToOne(() => UnidadMedida, (unidad) => unidad.products, { nullable: false })
     @JoinColumn({ name: "id_unidad" }) // FK en DB
     unidad: UnidadMedida;
 
     @ManyToOne(() => Proveedor, (proveedor) => proveedor.products, { nullable: false })
-    @JoinColumn({ name: "id_unidad" }) // FK en DB
+    @JoinColumn({ name: "id_proveedor" }) // FK en DB
     proveedor: Proveedor;
 }

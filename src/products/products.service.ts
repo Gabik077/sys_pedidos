@@ -25,7 +25,11 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto) {
 
-    const product = this.productRepository.create(createProductDto);
+    const product = this.productRepository.create({
+      ...createProductDto,
+      unidad: { id: createProductDto.id_unidad },
+      proveedor: { id: createProductDto.id_proveedor },
+    });
     await this.productRepository.save(product);
 
     return { status: "ok", message: "Producto actualizado exitosamente" };
@@ -93,6 +97,7 @@ export class ProductsService {
         id_categoria: true,
         id_proveedor: true,
         codigo_interno: true,
+        iva: true,
         precio_compra: true,
         unidad: {
           id: true,
@@ -114,8 +119,26 @@ export class ProductsService {
 
 
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    const product = await this.productRepository.findOne({ where: { id } });
+    if (!product) {
+      return { status: "error", message: "Producto no encontrado" };
+    }
+    try {
+      console.log("Actualizando producto con ID:", id, "Datos:", updateProductDto);
+      await this.productRepository.update(id, {
+        ...updateProductDto,
+        unidad: { id: updateProductDto.unidad }, // <-- importante
+      });
+
+    } catch (error) {
+      console.error("Error al actualizar el producto:", error);
+      return { status: "error", message: "Error al actualizar el producto" };
+    }
+
+    return { status: "ok", message: "Producto actualizado exitosamente" };
+
+
   }
 
   remove(id: number) {
