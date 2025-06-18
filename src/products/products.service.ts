@@ -143,7 +143,13 @@ export class ProductsService {
 
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number) {
+    const user = await this.productRepository.delete(id);
+
+    if (user.affected === 0) {
+      return { status: "error", message: "no se pudo borrar el producto" };
+    }
+
+    return { status: "ok", message: "borrado exitoso" };
   }
 }
