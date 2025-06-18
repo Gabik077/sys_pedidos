@@ -19,8 +19,8 @@ export class User {
     @Column({ type: "varchar", length: 50, unique: true, nullable: false })
     username: string;
 
-    @Column({ type: "int", unique: true, nullable: false })
-    empresa_id: number;
+    @Column({ type: 'int', unique: true, nullable: false })//EL PRIMER USUARIO SE CREA POR BASE DE DATOS Y DEBE SER EL ADMINISTRADOR
+    id_empresa: number;
 
     @Column({ type: "varchar", length: 100, unique: true, nullable: false })
     email: string;

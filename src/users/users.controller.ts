@@ -2,12 +2,12 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } fro
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Role } from 'src/auth/roles.enum';
-
+import { User as UserDec } from 'src/users/user.decorator';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -25,8 +25,8 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserDto, @UserDec('id_empresa') idEmpresa: number) {
+    return this.usersService.create(createUserDto, idEmpresa);
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)

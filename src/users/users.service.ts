@@ -18,7 +18,7 @@ export class UsersService {
     private rolesRepository: Repository<Rol>
   ) { }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto, empresa: number) {
 
     try {
       const existingUser = await this.usersRepository.findOne({
@@ -33,7 +33,12 @@ export class UsersService {
         return { status: "error", message: "El usuario ya existe" };
       }
 
-      const newUser = await this.usersRepository.create(createUserDto);
+      const newUser = await this.usersRepository.create(
+        {
+          ...createUserDto,
+          id_empresa: empresa,
+        }
+      );
       await this.usersRepository.save(newUser)
     }
     catch (error) {
