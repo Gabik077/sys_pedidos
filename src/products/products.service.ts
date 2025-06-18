@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,6 +24,19 @@ export class ProductsService {
 
 
   async create(createProductDto: CreateProductDto, id_empresa: number) {
+
+
+
+    const existingProduct = await this.productRepository.findOne({
+      where: { codigo_interno: createProductDto.codigo_interno, id_empresa: id_empresa },
+      select: { id: true },
+    })
+    if (existingProduct) {
+      return {
+        status: "error 100", message: " ya existe un producto con el mismo código interno"
+      };
+    }
+
 
     const product = this.productRepository.create({
       ...createProductDto,
