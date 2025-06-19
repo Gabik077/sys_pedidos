@@ -7,6 +7,7 @@ import { ProductsModule } from './products/products.module';
 import { Product } from './products/entities/product.entity';
 import { UnidadMedida } from './products/entities/unidad.entity';
 import { Proveedor } from './products/entities/proveedor.entity';
+import { StockModule } from './stock/stock.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { Proveedor } from './products/entities/proveedor.entity';
     AuthModule,
     UsersModule,
     ProductsModule,
+    StockModule,
   ],
 
 })
