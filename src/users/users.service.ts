@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Rol } from './entities/role.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -37,6 +38,7 @@ export class UsersService {
         {
           ...createUserDto,
           id_empresa: empresa,
+          contrasena: await bcrypt.hash(createUserDto.contrasena, 10),
         }
       );
       await this.usersRepository.save(newUser)
@@ -117,4 +119,5 @@ export class UsersService {
 
     return { status: "ok", message: "borrado exitoso" };
   }
+
 }

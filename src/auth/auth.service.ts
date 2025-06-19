@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -18,8 +19,7 @@ export class AuthService {
 
         const user = await this.usersRepository.findOne({
             where: {
-                username: username,
-                contrasena: password
+                username: username
             },
             relations: ['rol'],
             select: {
@@ -30,18 +30,22 @@ export class AuthService {
         });
 
         if (user) {
-            const payload = { sub: user.id, username: user.username, role: user.rol.descripcion, id_empresa: user.id_empresa };
-            const token = await this.jwtService.sign(payload);
+            const validPassword = await bcrypt.compare(password, user.contrasena);
 
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                path: '/',
-                sameSite: 'lax', // recomendado
-            });
+            if (validPassword) {
+                const payload = { sub: user.id, username: user.username, role: user.rol.descripcion, id_empresa: user.id_empresa };
+                const token = await this.jwtService.sign(payload);
+
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    path: '/',
+                    sameSite: 'lax', // recomendado
+                });
 
 
-            return { status: "ok", message: "Login exitoso", token: token };
+                return { status: "ok", message: "Login exitoso", token: token };
+            }
 
         }
 
@@ -57,5 +61,6 @@ export class AuthService {
     decodeToken(token: string) {
         return this.jwtService.decode(token);
     }
+
 
 }

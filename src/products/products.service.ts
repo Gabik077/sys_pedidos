@@ -33,7 +33,7 @@ export class ProductsService {
     })
     if (existingProduct) {
       return {
-        status: "error 100", message: " ya existe un producto con el mismo código interno"
+        status: "error", message: " ya existe un producto con el mismo código interno"
       };
     }
 
