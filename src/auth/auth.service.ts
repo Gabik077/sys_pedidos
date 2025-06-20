@@ -35,7 +35,7 @@ export class AuthService {
             if (validPassword) {
                 const payload = { sub: user.id, username: user.username, role: user.rol.descripcion, id_empresa: user.id_empresa };
                 const token = await this.jwtService.sign(payload);
-
+                console.log("Token generado:", token);
                 res.cookie('token', token, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',

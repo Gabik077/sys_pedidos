@@ -34,24 +34,25 @@ export class StockService {
           id_usuario: { id: idUsuario },
           id_empresa: idEmpresa ? { id: idEmpresa } : null,
           total_compra: dto.compra.total_compra,
-          estado: dto.compra.estado || 'pendiente'
+          estado: dto.compra.estado || 'aprobado'
         });
         const savedCompra = await queryRunner.manager.save(compra);
         dto.id_origen = savedCompra.id;
       }
 
       const entradaGeneral = queryRunner.manager.create(EntradaStockGeneral, { //2-inserta en tabla entrada_general
-        tipo_origen: dto.tipo_origen,
-        id_origen: dto.id_origen,
+        tipo_origen: dto.tipo_origen, // compra, pedido, ajuste, etc.
+        id_origen: dto.id_origen,// id compra, id pedido, etc.
         id_usuario: { id: idUsuario },
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
+        estado: 'aprobado',
         observaciones: dto.observaciones
       });
-      await queryRunner.manager.save(entradaGeneral);
+      const savedEntradaGeneral = await queryRunner.manager.save(entradaGeneral);
 
       for (const producto of dto.productos) {
         const entrada = queryRunner.manager.create(EntradaStock, {// 3-inserta en tabla entradas_stock
-          entrada_general: entradaGeneral,
+          entrada_general: savedEntradaGeneral,
           id_producto: { id: producto.id_producto } as Product,
           cantidad: producto.cantidad,
           id_usuario: { id: idUsuario },

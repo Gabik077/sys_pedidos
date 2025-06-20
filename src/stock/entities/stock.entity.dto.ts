@@ -11,6 +11,7 @@ export class Stock {
     id: number;
 
     @ManyToOne(() => Product, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'id_producto' })
     id_producto: Product;
 
     @Column({ type: 'int' })
@@ -23,9 +24,11 @@ export class Stock {
     fecha_actualizacion: Date;
 
     @ManyToOne(() => Empresa, { nullable: true })
+    @JoinColumn({ name: 'id_empresa' })
     id_empresa: Empresa;
 
     @ManyToOne(() => User)
+    @JoinColumn({ name: 'id_usuario' })
     id_usuario: User;
 
     @Column({ type: 'int', default: 0 })
