@@ -1,9 +1,27 @@
 import { Module } from '@nestjs/common';
 import { StockService } from './stock.service';
 import { StockController } from './stock.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Product } from '../products/entities/product.entity';
+import { Compra } from './entities/compras.entity';
+import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
+import { EntradaStock } from './entities/entradas-stock.entity';
+import { Empresa } from 'src/users/entities/empresa.entity';
+import { Stock } from './entities/stock.entity.dto';
+import { Venta } from './entities/ventas.entity';
 
 @Module({
+  imports: [TypeOrmModule.forFeature(
+    [
+      Product,
+      Compra,
+      Venta,
+      EntradaStockGeneral,
+      EntradaStock,
+      Stock,
+      Empresa
+    ])],
   controllers: [StockController],
   providers: [StockService],
 })
-export class StockModule {}
+export class StockModule { }

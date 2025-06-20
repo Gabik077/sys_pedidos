@@ -1,4 +1,4 @@
-export class Stock { }
+
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Empresa } from '../../users/entities/empresa.entity';

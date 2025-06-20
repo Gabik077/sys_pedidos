@@ -1,0 +1,11 @@
+import { Venta } from "../entities/ventas.entity";
+
+export class StockVentaDto {
+    tipo_origen: 'venta' | 'ajuste' | 'devolucion_proveedor' | 'pedido' | 'otro';
+    id_origen?: number;
+    observaciones?: string;
+    venta?: { id_cliente: number };
+    total_venta: number;
+    iva: number;
+    productos: { id_producto: number; cantidad: number; }[]
+}
