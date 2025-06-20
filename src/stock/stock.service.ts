@@ -28,27 +28,30 @@ export class StockService {
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
-      if (dto.compra) {
-        const compra = queryRunner.manager.create(Compra, { // 1-inserta en tabla compra
-          id_proveedor: { id: dto.compra.id_proveedor },
-          id_usuario: { id: idUsuario },
-          id_empresa: idEmpresa ? { id: idEmpresa } : null,
-          total_compra: dto.compra.total_compra,
-          estado: dto.compra.estado || 'aprobado'
-        });
-        const savedCompra = await queryRunner.manager.save(compra);
-        dto.id_origen = savedCompra.id;
-      }
 
       const entradaGeneral = queryRunner.manager.create(EntradaStockGeneral, { //2-inserta en tabla entrada_general
         tipo_origen: dto.tipo_origen, // compra, pedido, ajuste, etc.
-        id_origen: dto.id_origen,// id compra, id pedido, etc.
         id_usuario: { id: idUsuario },
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
         estado: 'aprobado',
         observaciones: dto.observaciones
       });
       const savedEntradaGeneral = await queryRunner.manager.save(entradaGeneral);
+
+
+      if (dto.compra) {
+        const compra = queryRunner.manager.create(Compra, { // 1-inserta en tabla compra
+          id_proveedor: { id: dto.compra.id_proveedor },
+          id_usuario: { id: idUsuario },
+          id_empresa: idEmpresa ? { id: idEmpresa } : null,
+          total_compra: dto.compra.total_compra,
+          id_entrada_stock_general: savedEntradaGeneral.id,
+          estado: dto.compra.estado || 'aprobado'
+        });
+        const savedCompra = await queryRunner.manager.save(compra);
+        dto.id_origen = savedCompra.id;
+      }
+
 
       for (const producto of dto.productos) {
         const entrada = queryRunner.manager.create(EntradaStock, {// 3-inserta en tabla entradas_stock
@@ -99,6 +102,16 @@ export class StockService {
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
+      const salidaGeneral = queryRunner.manager.create(SalidaStockGeneral, {
+        tipo_origen: dto.tipo_origen,
+        id_usuario: { id: idUsuario },
+        id_empresa: idEmpresa ? { id: idEmpresa } : null,
+        id_cliente: dto.venta.id_cliente,
+        observaciones: dto.observaciones
+      });
+
+      const salidaStockGeneral = await queryRunner.manager.save(salidaGeneral); // 2-inserta en tabla salida_general
+
       if (dto.venta) { //si es venta a un cliente
         const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
           id_cliente: dto.venta.id_cliente || null, // puede ser null si no es venta a cliente
@@ -106,21 +119,12 @@ export class StockService {
           estado: 'completada',
           id_empresa: { id: idEmpresa },
           id_usuario: { id: idUsuario },
-          iva: dto.total_venta / 11 || 0.00, //IVA Paraguay
+          salida_stock_general: salidaStockGeneral, // No se usa en ventas
+          iva: parseFloat((dto.total_venta / 11).toFixed(2)) || 0.00, //IVA Paraguay
         });
         const savedVenta = await queryRunner.manager.save(venta);
         dto.id_origen = savedVenta.id;
       }
-
-      const salidaGeneral = queryRunner.manager.create(SalidaStockGeneral, {
-        tipo_origen: dto.tipo_origen,
-        id_origen: dto.id_origen,
-        id_usuario: { id: idUsuario },
-        id_empresa: idEmpresa ? { id: idEmpresa } : null,
-        observaciones: dto.observaciones
-      });
-
-      await queryRunner.manager.save(salidaGeneral); // 2-inserta en tabla salida_general
 
       for (const producto of dto.productos) {
         const stock = await queryRunner.manager.findOne(Stock, {// 3-busca producto en tabla stock

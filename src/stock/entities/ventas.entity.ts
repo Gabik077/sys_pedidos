@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Double } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Double, JoinColumn } from 'typeorm';
 import { Empresa } from '../../users/entities/empresa.entity';
 import { User } from '../../users/entities/user.entity';
+import { join } from 'path';
+import { SalidaStockGeneral } from './salida-stock-general.entity';
 @Entity('ventas')
 export class Venta {
     @PrimaryGeneratedColumn()
@@ -18,12 +20,18 @@ export class Venta {
     @Column({ type: 'int', nullable: true })
     id_cliente: number;
 
+    @ManyToOne(() => SalidaStockGeneral, { nullable: true })
+    @JoinColumn({ name: 'id_salida_stock_general' })
+    salida_stock_general: SalidaStockGeneral;
+
     @Column({ type: 'numeric', precision: 10, scale: 2, default: 0.00 })
     iva: Double;
 
     @ManyToOne(() => Empresa)
+    @JoinColumn({ name: 'id_empresa' })
     id_empresa: Empresa;
 
     @ManyToOne(() => User)
+    @JoinColumn({ name: 'id_usuario' })
     id_usuario: User;
 }

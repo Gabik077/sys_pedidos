@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, JoinColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { SalidaStock } from './salidas-stock.entity';
 import { Empresa } from '../../users/entities/empresa.entity';
@@ -17,15 +17,21 @@ export class SalidaStockGeneral {
     @CreateDateColumn()
     fecha: Date;
 
+    @Column({ type: 'int', nullable: true })
+    id_cliente: number;
+
     @Column({ nullable: true })
     observaciones: string;
 
     @ManyToOne(() => User)
+    @JoinColumn({ name: 'id_usuario' })
     id_usuario: User;
 
     @ManyToOne(() => Empresa, { nullable: true })
+    @JoinColumn({ name: 'id_empresa' })
     id_empresa: Empresa;
 
     @OneToMany(() => SalidaStock, salida => salida.salida_general)
     salidas: SalidaStock[];
+
 }

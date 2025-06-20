@@ -9,6 +9,8 @@ import { EntradaStock } from './entities/entradas-stock.entity';
 import { Empresa } from 'src/users/entities/empresa.entity';
 import { Stock } from './entities/stock.entity.dto';
 import { Venta } from './entities/ventas.entity';
+import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
+import { SalidaStock } from './entities/salidas-stock.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(
@@ -16,8 +18,10 @@ import { Venta } from './entities/ventas.entity';
       Product,
       Compra,
       Venta,
+      SalidaStockGeneral,
       EntradaStockGeneral,
       EntradaStock,
+      SalidaStock,
       Stock,
       Empresa
     ])],

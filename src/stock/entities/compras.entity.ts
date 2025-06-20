@@ -28,6 +28,9 @@ export class Compra {
     @Column({ type: 'numeric', precision: 10, scale: 2, default: 0 })
     total_compra: number;
 
+    @Column({ type: 'int', nullable: false })
+    id_entrada_stock_general: number;
+
     @Column({ default: 'aprobado' })
     estado: 'aprobado' | 'pendiente' | 'rechazado';
 }
