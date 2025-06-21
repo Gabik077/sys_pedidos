@@ -38,6 +38,8 @@ export class StockController {
     return this.stockService.create(createStockDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Comprador)
   @Get()
   findAll() {
     return this.stockService.findAll();

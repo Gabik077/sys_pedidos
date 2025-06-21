@@ -11,6 +11,7 @@ import { Stock } from './entities/stock.entity.dto';
 import { Venta } from './entities/ventas.entity';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
 import { SalidaStock } from './entities/salidas-stock.entity';
+import { CategoriaStock } from './entities/categoria-stock.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(
@@ -23,7 +24,8 @@ import { SalidaStock } from './entities/salidas-stock.entity';
       EntradaStock,
       SalidaStock,
       Stock,
-      Empresa
+      Empresa,
+      CategoriaStock
     ])],
   controllers: [StockController],
   providers: [StockService],

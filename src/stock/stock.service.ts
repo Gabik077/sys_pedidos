@@ -5,16 +5,19 @@ import { Compra } from './entities/compras.entity';
 import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
 import { EntradaStock } from './entities/entradas-stock.entity';
 import { Product } from 'src/products/entities/product.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Stock } from './entities/stock.entity.dto';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
 import { SalidaStock } from './entities/salidas-stock.entity';
 import { StockVentaDto } from './dto/stock-venta.dto';
 import { Venta } from './entities/ventas.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class StockService {
   constructor(
+    @InjectRepository(Stock)
+    private stockRepository: Repository<Stock>,
     private readonly dataSource: DataSource
   ) { }
 
@@ -63,7 +66,7 @@ export class StockService {
         await queryRunner.manager.save(entrada);
 
         let stock = await queryRunner.manager.findOne(Stock, { //4-busca en tabla stock
-          where: { id_producto: { id: producto.id_producto } },
+          where: { producto: { id: producto.id_producto } },
           lock: { mode: 'pessimistic_write' }
         });
 
@@ -128,7 +131,7 @@ export class StockService {
 
       for (const producto of dto.productos) {
         const stock = await queryRunner.manager.findOne(Stock, {// 3-busca producto en tabla stock
-          where: { id_producto: { id: producto.id_producto } },
+          where: { producto: { id: producto.id_producto } },
           lock: { mode: 'pessimistic_write' }
         });
 
@@ -167,7 +170,39 @@ export class StockService {
   }
 
   findAll() {
-    return `This action returns all stock`;
+
+    const stock = this.stockRepository.find({
+      relations: { producto: true },
+      select: {
+        id: true,
+        cantidad_disponible: true,
+
+        producto: {
+          id: true,
+          nombre: true,
+          descripcion: true,
+          precio_venta: true,
+          precio_compra: true,
+          codigo_barra: true,
+          marca: true,
+          codigo_interno: true,
+          iva: true,
+          unidad: {
+            id: true,
+            nombre: true,
+            simbolo: true,
+          },
+          proveedor: {
+            id: true,
+            nombre: true,
+          },
+        },
+
+      }
+    }
+    );
+
+    return stock;
   }
 
   findOne(id: number) {

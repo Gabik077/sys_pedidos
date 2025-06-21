@@ -5,14 +5,13 @@ import { Product } from '../../products/entities/product.entity';
 import { CategoriaStock } from './categoria-stock.entity';
 
 @Entity('stock')
-@Unique(['id_producto'])
 export class Stock {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Product, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Product)
     @JoinColumn({ name: 'id_producto' })
-    id_producto: Product;
+    producto: Product;
 
     @Column({ type: 'int' })
     cantidad_disponible: number;
@@ -31,10 +30,8 @@ export class Stock {
     @JoinColumn({ name: 'id_usuario' })
     id_usuario: User;
 
-    @Column({ type: 'int', default: 0 })
+    @ManyToOne(() => CategoriaStock)
+    @JoinColumn({ name: 'id_categoria_stock' })
     id_categoria_stock: number;
 
-    /*  @ManyToOne(() => CategoriaStock, (categoria) => categoria.id, { nullable: false })
-      @JoinColumn({ name: "id_categoria_stock" }) // Define la clave foránea
-      id_categoria_stock: CategoriaStock;*/
 }
