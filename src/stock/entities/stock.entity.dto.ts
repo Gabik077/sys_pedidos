@@ -9,7 +9,7 @@ export class Stock {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Product)
+    @ManyToOne(() => Product, { nullable: false })
     @JoinColumn({ name: 'id_producto' })
     producto: Product;
 

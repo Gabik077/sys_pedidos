@@ -76,8 +76,9 @@ export class StockService {
           stock.cantidad_disponible += producto.cantidad;
           await queryRunner.manager.save(stock);
         } else {
+          console.log("No existe stock para el producto, creando nuevo registro", producto.id_producto);
           stock = queryRunner.manager.create(Stock, { // 5- inserta en tabla stock (actualiza cantidad)
-            id_producto: { id: producto.id_producto } as Product,
+            producto: { id: producto.id_producto },
             cantidad_disponible: producto.cantidad,
             id_usuario: { id: idUsuario },
             id_empresa: idEmpresa ? { id: idEmpresa } : null,
