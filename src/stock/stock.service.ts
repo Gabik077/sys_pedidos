@@ -18,6 +18,8 @@ export class StockService {
   constructor(
     @InjectRepository(Stock)
     private stockRepository: Repository<Stock>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
     private readonly dataSource: DataSource
   ) { }
 
@@ -123,7 +125,7 @@ export class StockService {
           id_empresa: { id: idEmpresa },
           id_usuario: { id: idUsuario },
           salida_stock_general: salidaStockGeneral, // No se usa en ventas
-          iva: parseFloat((dto.total_venta / 11).toFixed(2)) || 0.00, //IVA Paraguay
+          iva: parseFloat((dto.total_venta / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
         });
         const savedVenta = await queryRunner.manager.save(venta);
         dto.id_origen = savedVenta.id;
