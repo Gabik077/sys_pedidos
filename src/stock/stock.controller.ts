@@ -14,6 +14,13 @@ export class StockController {
   constructor(private readonly stockService: StockService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
+  @Get('clientes')
+  async getClientes() {
+    return this.stockService.getClientes();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador)
   @Post('entrada')
   async registrarEntradaStock(@Body() dto: CreateStockDto,

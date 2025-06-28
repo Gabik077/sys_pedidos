@@ -12,16 +12,30 @@ import { SalidaStock } from './entities/salidas-stock.entity';
 import { StockVentaDto } from './dto/stock-venta.dto';
 import { Venta } from './entities/ventas.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cliente } from './entities/cliente.entity';
+import { stat } from 'fs';
 
 @Injectable()
 export class StockService {
   constructor(
     @InjectRepository(Stock)
     private stockRepository: Repository<Stock>,
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>,
+    @InjectRepository(Cliente)
+    private clientRepository: Repository<Cliente>,
     private readonly dataSource: DataSource
   ) { }
+
+
+  async getClientes(): Promise<Cliente[]> {
+    return this.clientRepository.find({
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        telefono: true,
+      },
+    });
+  }
 
   async registrarCompraYEntradaStock(
     dto: CreateStockDto,
@@ -89,7 +103,7 @@ export class StockService {
       }
 
       await queryRunner.commitTransaction();
-      return { message: 'Entrada de stock registrada con éxito', entradaGeneralId: entradaGeneral.id };
+      return { status: 'ok', message: 'Compra y entrada de stock registrada con éxito' };
 
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -112,7 +126,7 @@ export class StockService {
         tipo_origen: dto.tipo_origen,
         id_usuario: { id: idUsuario },
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
-        id_cliente: dto.venta.id_cliente,
+        id_cliente: dto.venta ? dto.venta.id_cliente : null, // puede ser null si no es venta a cliente
         observaciones: dto.observaciones
       });
 
@@ -158,7 +172,7 @@ export class StockService {
       }
 
       await queryRunner.commitTransaction();
-      return { mensaje: 'Salida registrada con éxito' };
+      return { status: 'ok', message: 'Salida de stock registrada con éxito' };
 
     } catch (error) {
       await queryRunner.rollbackTransaction();
