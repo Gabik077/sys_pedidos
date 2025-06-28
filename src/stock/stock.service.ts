@@ -14,10 +14,13 @@ import { Venta } from './entities/ventas.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { stat } from 'fs';
+import { MovilPedido } from './entities/movil-pedido.entity';
 
 @Injectable()
 export class StockService {
   constructor(
+    @InjectRepository(MovilPedido)
+    private movilRepository: Repository<MovilPedido>,
     @InjectRepository(Stock)
     private stockRepository: Repository<Stock>,
     @InjectRepository(Cliente)
@@ -25,6 +28,17 @@ export class StockService {
     private readonly dataSource: DataSource
   ) { }
 
+  async getMoviles(): Promise<MovilPedido[]> {
+    return this.movilRepository.find({
+      select: {
+        id: true,
+        nombreChofer: true,
+        chapaMovil: true,
+        tipoMovil: true,
+        nombreMovil: true,
+      },
+    });
+  }
 
   async getClientes(): Promise<Cliente[]> {
     return this.clientRepository.find({
@@ -34,6 +48,10 @@ export class StockService {
         apellido: true,
         telefono: true,
         ruc: true,
+        lat: true,
+        lon: true,
+        direccion: true,
+        ciudad: true,
       },
     });
   }

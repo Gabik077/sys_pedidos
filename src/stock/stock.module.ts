@@ -13,6 +13,7 @@ import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
 import { SalidaStock } from './entities/salidas-stock.entity';
 import { CategoriaStock } from './entities/categoria-stock.entity';
 import { Cliente } from './entities/cliente.entity';
+import { MovilPedido } from './entities/movil-pedido.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(
@@ -27,7 +28,8 @@ import { Cliente } from './entities/cliente.entity';
       Stock,
       Empresa,
       CategoriaStock,
-      Cliente
+      Cliente,
+      MovilPedido
     ])],
   controllers: [StockController],
   providers: [StockService],

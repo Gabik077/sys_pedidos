@@ -21,6 +21,13 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
+  @Get('moviles')
+  async getMoviles() {
+    return this.stockService.getMoviles();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador)
   @Post('entrada')
   async registrarEntradaStock(@Body() dto: CreateStockDto,
