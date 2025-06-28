@@ -11,6 +11,9 @@ export class Venta {
     @Column({ type: 'numeric', precision: 10, scale: 2, default: 0.00 })
     total_venta: number;
 
+    @Column({ type: 'varchar', length: 50, nullable: true })
+    metodo_pago: string;
+
     @CreateDateColumn()
     fecha_venta: Date;
 

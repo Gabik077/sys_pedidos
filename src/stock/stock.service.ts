@@ -138,6 +138,7 @@ export class StockService {
           id_cliente: dto.venta.id_cliente || null, // puede ser null si no es venta a cliente
           total_venta: dto.total_venta,
           estado: 'completada',
+          metodo_pago: dto.venta.metodo_pago || 'efectivo', // por defecto efectivo
           id_empresa: { id: idEmpresa },
           id_usuario: { id: idUsuario },
           salida_stock_general: salidaStockGeneral, // No se usa en ventas

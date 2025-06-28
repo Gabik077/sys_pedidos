@@ -4,7 +4,7 @@ export class StockVentaDto {
     tipo_origen: 'venta' | 'ajuste' | 'devolucion_proveedor' | 'pedido' | 'otro';
     id_origen?: number;
     observaciones?: string;
-    venta?: { id_cliente: number };
+    venta?: { id_cliente: number, metodo_pago?: string };
     total_venta: number;
     iva: number;
     productos: { id_producto: number; cantidad: number; }[]
