@@ -33,6 +33,7 @@ export class StockService {
         nombre: true,
         apellido: true,
         telefono: true,
+        ruc: true,
       },
     });
   }
