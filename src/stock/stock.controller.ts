@@ -8,6 +8,7 @@ import { Role } from 'src/auth/roles.enum';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { User } from 'src/users/user.decorator';
 import { StockVentaDto } from './dto/stock-venta.dto';
+import { CrearPedidoDto } from './dto/create-pedido.dto';
 
 @Controller('stock')
 export class StockController {
@@ -25,6 +26,16 @@ export class StockController {
   @Get('moviles')
   async getMoviles() {
     return this.stockService.getMoviles();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
+  @Post('pedido')
+  async registrarPedido(@Body() dto: CrearPedidoDto,
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number
+  ) {
+    return this.stockService.crearPedido(dto, idEmpresa, idUsuario);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

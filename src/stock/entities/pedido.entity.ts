@@ -8,6 +8,8 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { Cliente } from './cliente.entity';
+import { Empresa } from 'src/users/entities/empresa.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Entity('pedidos')
 export class Pedido {
@@ -38,5 +40,11 @@ export class Pedido {
 
     @Column({ type: 'varchar', length: 50, nullable: true })
     responsable?: string;
+
+    @Column({ name: 'id_empresa' })
+    empresa: number;
+
+    @Column({ name: 'id_usuario', type: 'int' })
+    id_usuario: number;
 
 }

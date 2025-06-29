@@ -14,6 +14,8 @@ import { SalidaStock } from './entities/salidas-stock.entity';
 import { CategoriaStock } from './entities/categoria-stock.entity';
 import { Cliente } from './entities/cliente.entity';
 import { MovilPedido } from './entities/movil-pedido.entity';
+import { Pedido } from './entities/pedido.entity';
+import { DetallePedido } from './entities/detalle-pedido.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(
@@ -29,7 +31,9 @@ import { MovilPedido } from './entities/movil-pedido.entity';
       Empresa,
       CategoriaStock,
       Cliente,
-      MovilPedido
+      MovilPedido,
+      Pedido,
+      DetallePedido
     ])],
   controllers: [StockController],
   providers: [StockService],

@@ -15,10 +15,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { stat } from 'fs';
 import { MovilPedido } from './entities/movil-pedido.entity';
+import { Pedido } from './entities/pedido.entity';
+import { DetallePedido } from './entities/detalle-pedido.entity';
+import { CrearPedidoDto } from './dto/create-pedido.dto';
+import { EnvioPedido } from './entities/envio-pedido.entity';
 
 @Injectable()
 export class StockService {
   constructor(
+    @InjectRepository(Pedido)
+    private pedidoRepository: Repository<Pedido>,
     @InjectRepository(MovilPedido)
     private movilRepository: Repository<MovilPedido>,
     @InjectRepository(Stock)
@@ -172,7 +178,7 @@ export class StockService {
           lock: { mode: 'pessimistic_write' }
         });
 
-        if (!stock || stock.cantidad_disponible < producto.cantidad) {
+        if (!stock || (stock.cantidad_disponible - stock.cantidad_reservada) < producto.cantidad) {
           return { status: 'error', message: `Stock insuficiente para el producto ID ${producto.id_producto}` };
         }
 
@@ -197,6 +203,77 @@ export class StockService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+
+  async crearPedido(dto: CrearPedidoDto, idEmpresa: number, idUsuario: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
+
+    try {
+      const pedido = new Pedido();
+      pedido.idCliente = dto.pedido.id_cliente;
+      pedido.estado = dto.pedido.estado;
+      pedido.total = dto.total_venta;
+      pedido.clienteNombre = dto.pedido.cliente_nombre;
+      pedido.observaciones = dto.observaciones;
+      pedido.responsable = dto.pedido.chofer;
+      pedido.empresa = idEmpresa;
+      pedido.id_usuario = idUsuario;
+
+      const pedidoGuardado = await queryRunner.manager.save(Pedido, pedido);
+
+      // Crear envio pedido
+      /*  if (dto.pedido.id_movil) {
+          const envioPedido = new EnvioPedido();
+          envioPedido.idPedido = pedidoGuardado.id;
+          envioPedido.idMovil = dto.pedido.id_movil || null;
+          envioPedido.estado = 'pendiente';
+
+          await queryRunner.manager.save(EnvioPedido, envioPedido);
+        }*/
+
+      for (const producto of dto.productos) {
+        const stock = await queryRunner.manager.findOne(Stock, {
+          where: { producto: { id: producto.id_producto } },
+          relations: ['producto'],
+        });
+
+        if (!stock) {
+          return {
+            status: 'error', message: `No hay stock para el producto ID ${producto.id_producto}`
+          };
+        }
+
+        if ((stock.cantidad_disponible - stock.cantidad_reservada) < producto.cantidad) {
+          return { status: 'error', message: `Stock insuficiente para el producto ID ${producto.id_producto}` };
+        }
+
+        // Crear detalle pedido
+        const detalle = new DetallePedido();
+        detalle.idPedido = pedidoGuardado.id;
+        detalle.idProducto = producto.id_producto;
+        detalle.cantidad = producto.cantidad;
+        detalle.estado = 'reservado';
+        detalle.precioUnitario = Number(stock.producto['precio_venta']); // Asume que precio_venta existe
+
+        await queryRunner.manager.save(DetallePedido, detalle);
+
+        // Actualizar stock
+        stock.cantidad_reservada += producto.cantidad;
+        // stock.cantidad_disponible -= producto.cantidad; // Reservamos el stock hasta que se confirme el pedido, despues se descuenta
+        await queryRunner.manager.save(Stock, stock);
+      }
+
+      await queryRunner.commitTransaction();
+      return { status: 'ok', id_pedido: pedidoGuardado.id };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new Error(`Error al crear el pedido: ${error.message}`);
     } finally {
       await queryRunner.release();
     }
