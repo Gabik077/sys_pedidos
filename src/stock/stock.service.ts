@@ -208,6 +208,15 @@ export class StockService {
     }
   }
 
+  async getPedidos(): Promise<Pedido[]> {
+    return this.pedidoRepository.find({
+      relations: ['cliente', 'detalles', 'detalles.producto'],
+      order: {
+        fechaPedido: 'DESC',
+      },
+    });
+  }
+
 
   async crearPedido(dto: CrearPedidoDto, idEmpresa: number, idUsuario: number) {
     const queryRunner = this.dataSource.createQueryRunner();

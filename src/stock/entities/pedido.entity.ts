@@ -3,13 +3,12 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    OneToMany,
     CreateDateColumn,
     JoinColumn,
+    OneToMany,
 } from 'typeorm';
 import { Cliente } from './cliente.entity';
-import { Empresa } from 'src/users/entities/empresa.entity';
-import { User } from 'src/users/entities/user.entity';
+import { DetallePedido } from './detalle-pedido.entity';
 
 @Entity('pedidos')
 export class Pedido {
@@ -46,5 +45,9 @@ export class Pedido {
 
     @Column({ name: 'id_usuario', type: 'int' })
     id_usuario: number;
+
+    @OneToMany(() => DetallePedido, (detallePedido) => detallePedido.pedido)
+    @JoinColumn({ name: 'id_pedido' })
+    detalles: DetallePedido[];
 
 }

@@ -30,6 +30,13 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
+  @Get('getPedidos')
+  async getPedidos() {
+    return this.stockService.getPedidos();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
   @Post('pedido')
   async registrarPedido(@Body() dto: CrearPedidoDto,
     @User('id_empresa') idEmpresa: number,
