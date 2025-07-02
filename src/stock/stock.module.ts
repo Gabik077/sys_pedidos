@@ -16,6 +16,8 @@ import { Cliente } from './entities/cliente.entity';
 import { MovilPedido } from './entities/movil-pedido.entity';
 import { Pedido } from './entities/pedido.entity';
 import { DetallePedido } from './entities/detalle-pedido.entity';
+import { EnvioPedido } from './entities/envio-pedido.entity';
+import { EnviosHeader } from './entities/envios-header.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(
@@ -33,7 +35,9 @@ import { DetallePedido } from './entities/detalle-pedido.entity';
       Cliente,
       MovilPedido,
       Pedido,
-      DetallePedido
+      DetallePedido,
+      EnvioPedido,
+      EnviosHeader
     ])],
   controllers: [StockController],
   providers: [StockService],

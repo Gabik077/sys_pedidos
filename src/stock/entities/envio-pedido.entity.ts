@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Pedido } from './pedido.entity';
 import { MovilPedido } from './movil-pedido.entity';
+import { EnviosHeader } from './envios-header.entity';
 
 @Entity('envio_pedidos')
 export class EnvioPedido {
@@ -32,8 +33,15 @@ export class EnvioPedido {
     fechaCreacion: Date;
 
     @Column({ name: 'fecha_entrega', type: 'timestamp', nullable: true })
-    fechaEntrega: Date | null;
+    fechaEntrega?: Date | null;
 
     @Column({ type: 'varchar', default: 'pendiente' })
     estado: string;
+
+    @Column({ name: 'orden_envio' })
+    ordenEnvio: number;
+
+    @ManyToOne(() => EnviosHeader)
+    @JoinColumn({ name: 'envio_header_id' })
+    envioHeader: EnviosHeader;
 }

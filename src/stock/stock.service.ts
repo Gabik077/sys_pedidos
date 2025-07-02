@@ -19,10 +19,16 @@ import { Pedido } from './entities/pedido.entity';
 import { DetallePedido } from './entities/detalle-pedido.entity';
 import { CrearPedidoDto } from './dto/create-pedido.dto';
 import { EnvioPedido } from './entities/envio-pedido.entity';
+import { EnviosHeader } from './entities/envios-header.entity';
+import { CreateEnvioDto } from './dto/create-envio.dto';
 
 @Injectable()
 export class StockService {
   constructor(
+    @InjectRepository(EnviosHeader)
+    private headerRepo: Repository<EnviosHeader>,
+    @InjectRepository(EnvioPedido)
+    private detalleRepo: Repository<EnvioPedido>,
     @InjectRepository(Pedido)
     private pedidoRepository: Repository<Pedido>,
     @InjectRepository(MovilPedido)
@@ -31,7 +37,7 @@ export class StockService {
     private stockRepository: Repository<Stock>,
     @InjectRepository(Cliente)
     private clientRepository: Repository<Cliente>,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
   ) { }
 
   async getMoviles(): Promise<MovilPedido[]> {
@@ -327,6 +333,45 @@ export class StockService {
 
     return stock;
   }
+
+  async crearEnvio(dto: CreateEnvioDto, idEmpresa: number, idUsuario: number) {
+
+    try {
+      // 1. Crear encabezado
+      const header = this.headerRepo.create(
+        {
+          estado: 'pendiente',
+          id_empresa: idEmpresa ? { id: idEmpresa } : null,
+          idUsuario: idUsuario
+        });
+      const savedHeader = await this.headerRepo.save(header);
+
+      // 2. Crear registros detalle
+      const detalles = dto.pedidos.map((idPedido, index) =>
+        this.detalleRepo.create(
+          {
+            idPedido: idPedido,
+            idMovil: dto.idMovil,
+            estado: 'pendiente',
+            fechaCreacion: new Date(),
+            ordenEnvio: index + 1,
+            envioHeader: { id: savedHeader.id }, // Asignar el encabezado creado
+          }
+        ),
+      );
+
+      await this.detalleRepo.save(detalles);
+
+    } catch (error) {
+      console.error('Error al crear el envío:', error);
+      return { status: 'error', message: 'Error al crear el envío' };
+
+    }
+
+
+    return { status: 'ok', message: 'Envio creado con éxito' };
+  }
+
 
   findOne(id: number) {
     return `This action returns a #${id} stock`;
