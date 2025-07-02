@@ -35,9 +35,6 @@ export class EnvioPedido {
     @Column({ name: 'fecha_entrega', type: 'timestamp', nullable: true })
     fechaEntrega?: Date | null;
 
-    @Column({ type: 'varchar', default: 'pendiente' })
-    estado: string;
-
     @Column({ name: 'orden_envio' })
     ordenEnvio: number;
 

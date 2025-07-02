@@ -26,7 +26,7 @@ export class Pedido {
     fechaPedido: Date;
 
     @Column({ type: 'varchar', length: 20 })
-    estado: 'pendiente' | 'entregado' | 'cancelado';
+    estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado';
 
     @Column({ type: 'numeric', precision: 10, scale: 2, default: 0 })
     total: number;

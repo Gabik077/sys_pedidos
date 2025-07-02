@@ -32,9 +32,9 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
-  @Get('getPedidos')
+  @Get('getPedidosPendientes')
   async getPedidos() {
-    return this.stockService.getPedidos();
+    return this.stockService.getPedidosPendientes();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

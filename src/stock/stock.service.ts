@@ -214,8 +214,9 @@ export class StockService {
     }
   }
 
-  async getPedidos(): Promise<Pedido[]> {
+  async getPedidosPendientes(): Promise<Pedido[]> {
     return this.pedidoRepository.find({
+      where: { estado: 'pendiente' }, // Filtrar solo pedidos pendientes
       relations: ['cliente', 'detalles', 'detalles.producto'],
       order: {
         fechaPedido: 'DESC',
@@ -241,16 +242,6 @@ export class StockService {
       pedido.id_usuario = idUsuario;
 
       const pedidoGuardado = await queryRunner.manager.save(Pedido, pedido);
-
-      // Crear envio pedido
-      /*  if (dto.pedido.id_movil) {
-          const envioPedido = new EnvioPedido();
-          envioPedido.idPedido = pedidoGuardado.id;
-          envioPedido.idMovil = dto.pedido.id_movil || null;
-          envioPedido.estado = 'pendiente';
-
-          await queryRunner.manager.save(EnvioPedido, envioPedido);
-        }*/
 
       for (const producto of dto.productos) {
         const stock = await queryRunner.manager.findOne(Stock, {
@@ -335,42 +326,62 @@ export class StockService {
   }
 
   async crearEnvio(dto: CreateEnvioDto, idEmpresa: number, idUsuario: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
       // 1. Crear encabezado
-      const header = this.headerRepo.create(
-        {
-          estado: 'pendiente',
-          id_empresa: idEmpresa ? { id: idEmpresa } : null,
-          idUsuario: idUsuario
-        });
-      const savedHeader = await this.headerRepo.save(header);
+      const header = this.headerRepo.create({
+        estado: 'pendiente',
+        id_empresa: idEmpresa ? { id: idEmpresa } : null,
+        idUsuario: idUsuario,
+      });
 
-      // 2. Crear registros detalle
+      const savedHeader = await queryRunner.manager.save(header);
+
+      // 2. Crear detalle
       const detalles = dto.pedidos.map((idPedido, index) =>
-        this.detalleRepo.create(
-          {
-            idPedido: idPedido,
-            idMovil: dto.idMovil,
-            estado: 'pendiente',
-            fechaCreacion: new Date(),
-            ordenEnvio: index + 1,
-            envioHeader: { id: savedHeader.id }, // Asignar el encabezado creado
-          }
-        ),
+        this.detalleRepo.create({
+          idPedido: idPedido,
+          idMovil: dto.idMovil,
+          fechaCreacion: new Date(),
+          ordenEnvio: index + 1,
+          envioHeader: savedHeader,
+        }),
       );
 
-      await this.detalleRepo.save(detalles);
+      await queryRunner.manager.save(detalles);
 
+      // 3. Actualizar pedidos
+      for (const idPedido of dto.pedidos) {
+        const pedido = await queryRunner.manager.findOne(Pedido, {
+          where: { id: idPedido },
+          relations: ['cliente'],
+        });
+
+        if (!pedido) {
+          throw new Error(`Pedido con ID ${idPedido} no encontrado`);
+        }
+
+        pedido.estado = 'envio_creado';
+        await queryRunner.manager.save(pedido);
+      }
+
+      // ✅ Commit si todo fue exitoso
+      await queryRunner.commitTransaction();
+
+      return { status: 'ok', message: 'Envío creado con éxito' };
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       console.error('Error al crear el envío:', error);
       return { status: 'error', message: 'Error al crear el envío' };
-
+    } finally {
+      await queryRunner.release();
     }
-
-
-    return { status: 'ok', message: 'Envio creado con éxito' };
   }
+
 
 
   findOne(id: number) {
