@@ -325,6 +325,16 @@ export class StockService {
     return stock;
   }
 
+  async getEnviosPendientes(): Promise<EnviosHeader[]> {
+    return this.headerRepo.find({
+      where: { estado: 'pendiente' }, // Filtrar solo envíos pendientes
+      relations: ['envioPedido', 'envioPedido.movil', 'envioPedido.pedido', 'envioPedido.pedido.cliente', 'envioPedido.pedido.detalles', 'envioPedido.pedido.detalles.producto'],
+      order: {
+        fechaCreacion: 'DESC',
+      },
+    });
+  }
+
   async crearEnvio(dto: CreateEnvioDto, idEmpresa: number, idUsuario: number) {
     const queryRunner = this.dataSource.createQueryRunner();
 

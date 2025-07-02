@@ -1,6 +1,7 @@
 import { Empresa } from 'src/users/entities/empresa.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { EnvioPedido } from './envio-pedido.entity';
 
 @Entity('envios_header')
 export class EnviosHeader {
@@ -22,4 +23,7 @@ export class EnviosHeader {
 
     @Column({ name: 'id_usuario', type: 'int' })
     idUsuario: number;
+
+    @OneToMany(() => EnvioPedido, (envio) => envio.envioHeader)
+    envioPedido: EnvioPedido[];
 }

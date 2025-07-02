@@ -36,6 +36,12 @@ export class StockController {
   async getPedidos() {
     return this.stockService.getPedidosPendientes();
   }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
+  @Get('getEnviosPendientes')
+  async getEnviosPendientes() {
+    return this.stockService.getEnviosPendientes();
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
