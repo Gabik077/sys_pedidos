@@ -12,7 +12,7 @@ import { Venta } from './entities/ventas.entity';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
 import { SalidaStock } from './entities/salidas-stock.entity';
 import { CategoriaStock } from './entities/categoria-stock.entity';
-import { Cliente } from './entities/cliente.entity';
+import { Cliente } from '../clients/entities/cliente.entity';
 import { MovilPedido } from './entities/movil-pedido.entity';
 import { Pedido } from './entities/pedido.entity';
 import { DetallePedido } from './entities/detalle-pedido.entity';

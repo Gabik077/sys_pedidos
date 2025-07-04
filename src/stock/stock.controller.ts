@@ -18,13 +18,6 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
-  @Get('clientes')
-  async getClientes() {
-    return this.stockService.getClientes();
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
   @Get('moviles')
   async getMoviles() {
     return this.stockService.getMoviles();

@@ -7,7 +7,7 @@ import {
     JoinColumn,
     OneToMany,
 } from 'typeorm';
-import { Cliente } from './cliente.entity';
+import { Cliente } from '../../clients/entities/cliente.entity';
 import { DetallePedido } from './detalle-pedido.entity';
 
 @Entity('pedidos')

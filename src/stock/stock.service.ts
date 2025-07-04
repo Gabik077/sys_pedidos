@@ -12,7 +12,7 @@ import { SalidaStock } from './entities/salidas-stock.entity';
 import { StockVentaDto } from './dto/stock-venta.dto';
 import { Venta } from './entities/ventas.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cliente } from './entities/cliente.entity';
+import { Cliente } from '../clients/entities/cliente.entity';
 import { stat } from 'fs';
 import { MovilPedido } from './entities/movil-pedido.entity';
 import { Pedido } from './entities/pedido.entity';
@@ -35,8 +35,6 @@ export class StockService {
     private movilRepository: Repository<MovilPedido>,
     @InjectRepository(Stock)
     private stockRepository: Repository<Stock>,
-    @InjectRepository(Cliente)
-    private clientRepository: Repository<Cliente>,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -52,21 +50,7 @@ export class StockService {
     });
   }
 
-  async getClientes(): Promise<Cliente[]> {
-    return this.clientRepository.find({
-      select: {
-        id: true,
-        nombre: true,
-        apellido: true,
-        telefono: true,
-        ruc: true,
-        lat: true,
-        lon: true,
-        direccion: true,
-        ciudad: true,
-      },
-    });
-  }
+
 
   async registrarCompraYEntradaStock(
     dto: CreateStockDto,
