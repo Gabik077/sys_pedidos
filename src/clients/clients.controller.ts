@@ -21,6 +21,19 @@ export class ClientsController {
     @User('userId') idUsuario: number) {
     return this.clientsService.create(createClientDto, idEmpresa, idUsuario);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Post(':id')
+  updateClient(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateClientDto: UpdateClientDto,
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number,
+  ): Promise<{ status: string; message: string }> {
+    return this.clientsService.updateClient(id, updateClientDto, idEmpresa, idUsuario);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
   @Get(':id')
@@ -35,15 +48,7 @@ export class ClientsController {
     return this.clientsService.getClientes();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
-  @Post(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateClientDto: UpdateClientDto,
-  ) {
-    return this.clientsService.update(id, updateClientDto);
-  }
+
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {

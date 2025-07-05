@@ -11,6 +11,37 @@ export class ClientsService {
     @InjectRepository(Cliente)
     private clientRepository: Repository<Cliente>,
   ) { }
+
+  async updateClient(
+    id: number,
+    updateClientDto: UpdateClientDto,
+    idEmpresa: number,
+    idUsuario: number,
+  ): Promise<{ status: string; message: string }> {
+    const client = await this.clientRepository.findOne({
+      where: { id },
+    });
+    if (!client) {
+      return { status: 'error', message: 'Cliente no encontrado' };
+    }
+    const updatedClient = this.clientRepository.merge(client, {
+      nombre: updateClientDto.nombre,
+      apellido: updateClientDto.apellido,
+      telefono: updateClientDto.telefono,
+      ruc: updateClientDto.ruc,
+      direccion: updateClientDto.direccion,
+      lat: updateClientDto.lat,
+      lon: updateClientDto.lon,
+      ciudad: updateClientDto.ciudad,
+      correo_electronico: updateClientDto.correo_electronico
+    });
+    const result = await this.clientRepository.save(updatedClient);
+    if (!result) {
+      return { status: 'error', message: 'Error al actualizar el cliente' };
+    }
+    return { status: 'ok', message: 'Cliente actualizado exitosamente' };
+  }
+
   async create(createClientDto: CreateClientDto, idEmpresa: number, idUsuario: number) {
     const newClient = this.clientRepository.create({
       nombre: createClientDto.nombre,
@@ -33,7 +64,7 @@ export class ClientsService {
       return { status: 'error', message: 'Error al crear el cliente' };
     }
 
-    return { status: 'success', message: 'Cliente creado exitosamente' };
+    return { status: 'ok', message: 'Cliente creado exitosamente' };
   }
 
   async getClienteById(id: number): Promise<Cliente | null> {
@@ -69,9 +100,7 @@ export class ClientsService {
     });
   }
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
-  }
+
 
   remove(id: number) {
     return `This action removes a #${id} client`;
