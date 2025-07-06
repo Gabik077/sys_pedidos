@@ -49,7 +49,8 @@ export class ClientsController {
   }
 
 
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.clientsService.remove(id);

@@ -33,7 +33,7 @@ export class ClientsService {
       lat: updateClientDto.lat,
       lon: updateClientDto.lon,
       ciudad: updateClientDto.ciudad,
-      correo_electronico: updateClientDto.correo_electronico
+      email: updateClientDto.email
     });
     const result = await this.clientRepository.save(updatedClient);
     if (!result) {
@@ -52,7 +52,7 @@ export class ClientsService {
       lat: createClientDto.lat,
       lon: createClientDto.lon,
       ciudad: createClientDto.ciudad,
-      correo_electronico: createClientDto.correo_electronico,
+      email: createClientDto.email,
       id_empresa: { id: idEmpresa },
       id_usuario: { id: idUsuario },
     });
@@ -75,6 +75,7 @@ export class ClientsService {
         nombre: true,
         apellido: true,
         telefono: true,
+        email: true,
         ruc: true,
         lat: true,
         lon: true,
@@ -103,6 +104,11 @@ export class ClientsService {
 
 
   remove(id: number) {
-    return `This action removes a #${id} client`;
+    return this.clientRepository.delete(id).then((result) => {
+      if (result.affected === 0) {
+        return { status: 'error', message: 'Cliente no encontrado' };
+      }
+      return { status: 'ok', message: 'Cliente eliminado exitosamente' };
+    });
   }
 }

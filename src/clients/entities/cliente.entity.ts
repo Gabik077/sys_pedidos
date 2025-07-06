@@ -34,7 +34,7 @@ export class Cliente {
     ruc: string;
 
     @Column({ length: 100, nullable: true })
-    correo_electronico: string;
+    email: string;
 
     @CreateDateColumn({ type: 'timestamp', name: 'fecha_registro' })
     fecha_registro: Date;

@@ -38,7 +38,7 @@ export class CreateClientDto {
     @IsOptional()
     @IsEmail({}, { message: 'Correo electrónico no válido' })
     @MaxLength(100)
-    correo_electronico?: string;
+    email?: string;
 
     @IsString()
     @IsOptional()
