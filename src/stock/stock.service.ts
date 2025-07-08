@@ -327,6 +327,12 @@ export class StockService {
     await queryRunner.startTransaction();
 
     try {
+
+      if (!dto.pedidos || dto.pedidos.length === 0) {
+        return { status: 'error', message: 'No se han seleccionado pedidos para el envío' };
+
+      }
+
       // 1. Crear encabezado
       const header = this.headerRepo.create({
         estado: 'pendiente',
@@ -478,14 +484,12 @@ export class StockService {
               where: { producto: { id: detalle.producto.id } },
               lock: { mode: 'pessimistic_write' }
             });
-            console.log("Liberando stock reservado para el producto: " + detalle.producto.nombre);
-            console.log("cantidad_reservada: " + stock.cantidad_reservada);
-            console.log("Liberando stock reservado para el producto: " + detalle.cantidad);
+
             if (stock && stock.cantidad_reservada >= detalle.cantidad) {
               stock.cantidad_reservada -= detalle.cantidad;// Liberar stock reservado
               stock.fecha_actualizacion = new Date();
               await queryRunner.manager.save(stock);
-              console.log("Libera stock  ");
+
             }
           });
 
