@@ -25,9 +25,9 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
-  @Get('getPedidosPendientes')
-  async getPedidos() {
-    return this.stockService.getPedidosPendientes();
+  @Get('getPedidos')
+  async getPedidos(@Query('estadoPedido') estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
+    return this.stockService.getPedidosPorEstado(estadoPedido);
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
@@ -53,7 +53,6 @@ export class StockController {
     @Body() dto: EstadoEnvioDto,
     @User('id_empresa') idEmpresa: number,
     @User('userId') idUsuario: number) {
-    console.log('Crear Envio idUsuario:', idEmpresa);
     return this.stockService.guardarEstadoPedido(dto, idEmpresa, idUsuario);
   }
 

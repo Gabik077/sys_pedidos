@@ -199,9 +199,9 @@ export class StockService {
     }
   }
 
-  async getPedidosPendientes(): Promise<Pedido[]> {
+  async getPedidosPorEstado(estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado'): Promise<Pedido[]> {
     return this.pedidoRepository.find({
-      where: { estado: 'pendiente' }, // Filtrar solo pedidos pendientes
+      where: { estado: estadoPedido }, // Filtrar solo pedidos pendientes
       relations: ['cliente', 'detalles', 'detalles.producto'],
       order: {
         fechaPedido: 'DESC',
@@ -472,6 +472,23 @@ export class StockService {
           const pedido = ep.pedido;
           pedido.estado = dto.estado;
           await queryRunner.manager.save(pedido);
+          // Si es cancelado, liberar stock reservado
+          pedido.detalles.forEach(async (detalle) => {
+            const stock = await queryRunner.manager.findOne(Stock, {
+              where: { producto: { id: detalle.producto.id } },
+              lock: { mode: 'pessimistic_write' }
+            });
+            console.log("Liberando stock reservado para el producto: " + detalle.producto.nombre);
+            console.log("cantidad_reservada: " + stock.cantidad_reservada);
+            console.log("Liberando stock reservado para el producto: " + detalle.cantidad);
+            if (stock && stock.cantidad_reservada >= detalle.cantidad) {
+              stock.cantidad_reservada -= detalle.cantidad;// Liberar stock reservado
+              stock.fecha_actualizacion = new Date();
+              await queryRunner.manager.save(stock);
+              console.log("Libera stock  ");
+            }
+          });
+
         }
       }
 
