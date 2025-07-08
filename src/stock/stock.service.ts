@@ -399,7 +399,8 @@ export class StockService {
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
-      // 1. Cargar encabezado del envío con bloqueo seguro
+      // 1. Cargar encabezado del envío con pedidos, detalles y productos
+      // 1. Hacer lock sobre el envío (tabla principal)
       const envio = await queryRunner.manager
         .getRepository(EnviosHeader)
         .createQueryBuilder("envio")
@@ -409,52 +410,64 @@ export class StockService {
 
       if (!envio) throw new Error(`No se encontró el envío con ID ${dto.id_envio}`);
 
-      // 2. Cargar relaciones por separado (sin lock)
+      // 1.1. Cargar relaciones aparte sin lock
       envio.envioPedido = await queryRunner.manager.find(EnvioPedido, {
         where: { envioHeader: { id: envio.id } },
         relations: ['pedido', 'pedido.detalles', 'pedido.detalles.producto'],
       });
 
+      // 2. Preparar salida_stock_general si es entregado
+      let savedSalidaGeneral = null;
       if (dto.estado === 'entregado') {
-        // 3. Insertar salida_stock_general
         const salidaGeneral = queryRunner.manager.create(SalidaStockGeneral, {
           tipo_origen: 'pedido',
           id_usuario: { id: idUsuario },
           id_empresa: idEmpresa ? { id: idEmpresa } : null,
           observaciones: dto.observaciones || '',
         });
-        const savedSalidaGeneral = await queryRunner.manager.save(salidaGeneral);
+        savedSalidaGeneral = await queryRunner.manager.save(salidaGeneral);
+      }
 
-        for (const ep of envio.envioPedido) {
-          const pedido = ep.pedido;
+      // 3. Obtener todos los productos en un solo query
+      const productoIds = new Set<number>();
+      envio.envioPedido.forEach(ep => {
+        ep.pedido.detalles.forEach(det => productoIds.add(det.producto.id));
+      });
 
-          // 4. Insertar venta
-          if (pedido.idCliente) {
-            const venta = queryRunner.manager.create(Venta, {
-              id_cliente: pedido.idCliente,
-              total_venta: pedido.total,
-              estado: 'completada',
-              metodo_pago: dto.metodo_pago || 'efectivo',
-              id_empresa: { id: idEmpresa },
-              id_usuario: { id: idUsuario },
-              salida_stock_general: savedSalidaGeneral,
-              iva: parseFloat((pedido.total / 11).toFixed(2)),
-            });
-            await queryRunner.manager.save(venta);
-          } else {
-            throw new Error(`El pedido #${pedido.id} no tiene cliente asociado`);
-          }
+      const stocks = await queryRunner.manager
+        .getRepository(Stock)
+        .createQueryBuilder("stock")
+        .setLock("pessimistic_write")
+        .leftJoinAndSelect("stock.producto", "producto")
+        .where("producto.id IN (:...ids)", { ids: [...productoIds] })
+        .getMany();
 
-          // 5. Procesar productos
-          for (const detalle of pedido.detalles) {
-            const stock = await queryRunner.manager
-              .getRepository(Stock)
-              .createQueryBuilder("stock")
-              .setLock("pessimistic_write")
-              .leftJoinAndSelect("stock.producto", "producto")
-              .where("producto.id = :id", { id: detalle.producto.id })
-              .getOne();
+      const stockMap = new Map(stocks.map(s => [s.producto.id, s]));
 
+      // 4. Procesar cada pedido y detalle
+      for (const ep of envio.envioPedido) {
+        const pedido = ep.pedido;
+
+        if (dto.estado === 'entregado') {
+          if (!pedido.idCliente) throw new Error(`Pedido ${pedido.id} no tiene cliente asociado`);
+
+          const venta = queryRunner.manager.create(Venta, {
+            id_cliente: pedido.idCliente,
+            total_venta: pedido.total,
+            estado: 'completada',
+            metodo_pago: dto.metodo_pago || 'efectivo',
+            id_empresa: { id: idEmpresa },
+            id_usuario: { id: idUsuario },
+            salida_stock_general: savedSalidaGeneral,
+            iva: parseFloat((pedido.total / 11).toFixed(2)),
+          });
+          await queryRunner.manager.save(venta);
+        }
+
+        for (const detalle of pedido.detalles) {
+          const stock = stockMap.get(detalle.producto.id);
+
+          if (dto.estado === 'entregado') {
             if (!stock || stock.cantidad_disponible < detalle.cantidad || stock.cantidad_reservada < detalle.cantidad) {
               throw new Error(`Stock insuficiente para producto ${detalle.producto.nombre}`);
             }
@@ -472,64 +485,22 @@ export class StockService {
             });
             await queryRunner.manager.save(salidaDetalle);
 
-            for (const detalle of pedido.detalles) {//buscar detalle por ID y modificar estado
-              // Buscar detalle por ID
-              const detallePedido = await queryRunner.manager.findOne(DetallePedido, {
-                where: { id: detalle.id },
-                lock: { mode: 'pessimistic_write' }
-              });
-
-              if (detallePedido) {
-                detallePedido.estado = 'entregado';
-                await queryRunner.manager.save(detallePedido);
-              }
-            }
-          }//cierre for detalle pedidos
-
-          // 6. Actualizar estado del pedido
-          pedido.estado = dto.estado;
-          await queryRunner.manager.save(pedido);
-        }
-
-      } else {
-        // Si estado es "cancelado", solo actualizar pedidos
-        for (const ep of envio.envioPedido) {
-          const pedido = ep.pedido;
-          pedido.estado = dto.estado;
-          await queryRunner.manager.save(pedido);
-          // Si es cancelado, liberar stock reservado
-
-          for (const detalle of pedido.detalles) {
-            const stock = await queryRunner.manager.findOne(Stock, {
-              where: { producto: { id: detalle.producto.id } },
-              lock: { mode: 'pessimistic_write' }
-            });
-
+            await queryRunner.manager.update(DetallePedido, detalle.id, { estado: 'entregado' });
+          } else if (dto.estado === 'cancelado') {
             if (stock && stock.cantidad_reservada >= detalle.cantidad) {
-              stock.cantidad_reservada -= detalle.cantidad;// Liberar stock reservado
+              stock.cantidad_reservada -= detalle.cantidad;
               stock.fecha_actualizacion = new Date();
               await queryRunner.manager.save(stock);
-
             }
-            for (const detalle of pedido.detalles) {//buscar detalle por ID y modificar estado
-              // Buscar detalle por ID
-              const detallePedido = await queryRunner.manager.findOne(DetallePedido, {
-                where: { id: detalle.id },
-                lock: { mode: 'pessimistic_write' }
-              });
-
-              if (detallePedido) {
-                detallePedido.estado = 'cancelado';
-                await queryRunner.manager.save(detallePedido);
-              }
-            }
-
-          };
-
+            await queryRunner.manager.update(DetallePedido, detalle.id, { estado: 'cancelado' });
+          }
         }
+
+        pedido.estado = dto.estado;
+        await queryRunner.manager.save(pedido);
       }
 
-      // 7. Actualizar estado del encabezado de envío
+      // 5. Actualizar estado del encabezado
       envio.estado = dto.estado;
       await queryRunner.manager.save(envio);
 
@@ -544,6 +515,7 @@ export class StockService {
       await queryRunner.release();
     }
   }
+
 
 
 
