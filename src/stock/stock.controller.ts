@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { StockService } from './stock.service';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
@@ -31,9 +31,9 @@ export class StockController {
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
-  @Get('getEnviosPendientes')
-  async getEnviosPendientes() {
-    return this.stockService.getEnviosPendientes();
+  @Get('getEnvios')
+  async getEnvios(@Query('estadoEnvio') estadoEnvio: string) {
+    return this.stockService.getEnviosPorEstado(estadoEnvio);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

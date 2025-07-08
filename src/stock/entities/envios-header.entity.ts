@@ -15,7 +15,7 @@ export class EnviosHeader {
     fechaFinalizacion?: Date;
 
     @Column({ type: 'varchar', length: 50, default: 'pendiente' })
-    estado: string;
+    estado: String;
 
     @ManyToOne(() => Empresa, { nullable: true })
     @JoinColumn({ name: 'id_empresa' })

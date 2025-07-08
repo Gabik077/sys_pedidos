@@ -5,7 +5,7 @@ import { Compra } from './entities/compras.entity';
 import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
 import { EntradaStock } from './entities/entradas-stock.entity';
 import { Product } from 'src/products/entities/product.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, In } from 'typeorm';
 import { Stock } from './entities/stock.entity.dto';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
 import { SalidaStock } from './entities/salidas-stock.entity';
@@ -310,9 +310,9 @@ export class StockService {
     return stock;
   }
 
-  async getEnviosPendientes(): Promise<EnviosHeader[]> {
+  async getEnviosPorEstado(estadoEnvio: String): Promise<EnviosHeader[]> {
     return this.headerRepo.find({
-      where: { estado: 'pendiente' }, // Filtrar solo envíos pendientes
+      where: { estado: estadoEnvio }, // Filtrar solo envíos pendientes
       relations: ['envioPedido', 'envioPedido.movil', 'envioPedido.pedido', 'envioPedido.pedido.cliente', 'envioPedido.pedido.detalles', 'envioPedido.pedido.detalles.producto'],
       order: {
         fechaCreacion: 'ASC',
