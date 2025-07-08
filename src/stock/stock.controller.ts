@@ -6,11 +6,11 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/auth/roles.enum';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { User } from 'src/users/user.decorator';
 import { StockVentaDto } from './dto/stock-venta.dto';
 import { CrearPedidoDto } from './dto/create-pedido.dto';
-import { EnvioPedido } from './entities/envio-pedido.entity';
 import { CreateEnvioDto } from './dto/create-envio.dto';
+import { EstadoEnvioDto } from './dto/estado-envio.dto';
+import { User } from 'src/users/user.decorator';
 
 @Controller('stock')
 export class StockController {
@@ -44,6 +44,17 @@ export class StockController {
     @User('userId') idUsuario: number
   ) {
     return this.stockService.crearEnvio(dto, idEmpresa, idUsuario);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
+  @Post('guardarEstadoPedido')
+  async guardarEstadoPedido(
+    @Body() dto: EstadoEnvioDto,
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number) {
+    console.log('Crear Envio idUsuario:', idEmpresa);
+    return this.stockService.guardarEstadoPedido(dto, idEmpresa, idUsuario);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -8,4 +8,10 @@ export class StockVentaDto {
     total_venta: number;
     iva: number;
     productos: { id_producto: number; cantidad: number; }[]
+    envio?: {
+        id_envio?: number;
+        estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado';
+        fecha_entrega?: Date;
+        metodo_pago?: string;
+    };
 }
