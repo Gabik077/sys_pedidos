@@ -321,6 +321,7 @@ export class StockService {
   }
 
   async crearEnvio(dto: CreateEnvioDto, idEmpresa: number, idUsuario: number) {
+
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -330,6 +331,11 @@ export class StockService {
 
       if (!dto.pedidos || dto.pedidos.length === 0) {
         return { status: 'error', message: 'No se han seleccionado pedidos para el envío' };
+
+      }
+
+      if (!dto.idMovil || dto.idMovil <= 0) {
+        return { status: 'error', message: 'Debe seleccionar un móvil válido para el envío' };
 
       }
 
@@ -465,7 +471,20 @@ export class StockService {
               id_usuario: { id: idUsuario }
             });
             await queryRunner.manager.save(salidaDetalle);
-          }
+
+            for (const detalle of pedido.detalles) {//buscar detalle por ID y modificar estado
+              // Buscar detalle por ID
+              const detallePedido = await queryRunner.manager.findOne(DetallePedido, {
+                where: { id: detalle.id },
+                lock: { mode: 'pessimistic_write' }
+              });
+
+              if (detallePedido) {
+                detallePedido.estado = 'entregado';
+                await queryRunner.manager.save(detallePedido);
+              }
+            }
+          }//cierre for detalle pedidos
 
           // 6. Actualizar estado del pedido
           pedido.estado = dto.estado;
@@ -479,7 +498,8 @@ export class StockService {
           pedido.estado = dto.estado;
           await queryRunner.manager.save(pedido);
           // Si es cancelado, liberar stock reservado
-          pedido.detalles.forEach(async (detalle) => {
+
+          for (const detalle of pedido.detalles) {
             const stock = await queryRunner.manager.findOne(Stock, {
               where: { producto: { id: detalle.producto.id } },
               lock: { mode: 'pessimistic_write' }
@@ -491,7 +511,20 @@ export class StockService {
               await queryRunner.manager.save(stock);
 
             }
-          });
+            for (const detalle of pedido.detalles) {//buscar detalle por ID y modificar estado
+              // Buscar detalle por ID
+              const detallePedido = await queryRunner.manager.findOne(DetallePedido, {
+                where: { id: detalle.id },
+                lock: { mode: 'pessimistic_write' }
+              });
+
+              if (detallePedido) {
+                detallePedido.estado = 'cancelado';
+                await queryRunner.manager.save(detallePedido);
+              }
+            }
+
+          };
 
         }
       }
