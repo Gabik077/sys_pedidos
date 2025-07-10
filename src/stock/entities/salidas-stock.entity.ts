@@ -20,6 +20,9 @@ export class SalidaStock {
     @Column()
     cantidad: number;
 
+    @Column({ type: 'int', nullable: true })
+    id_pedido?: number;
+
     @Column()
     observaciones: string;
 

@@ -479,6 +479,7 @@ export class StockService {
 
             const salidaDetalle = queryRunner.manager.create(SalidaStock, {
               salida_general: savedSalidaGeneral,
+              id_pedido: pedido.id,
               id_producto: { id: detalle.producto.id },
               cantidad: detalle.cantidad,
               id_usuario: { id: idUsuario }
