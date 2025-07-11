@@ -22,6 +22,7 @@ import { EnvioPedido } from './entities/envio-pedido.entity';
 import { EnviosHeader } from './entities/envios-header.entity';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { EstadoEnvioDto } from './dto/estado-envio.dto';
+import { env } from 'process';
 
 @Injectable()
 export class StockService {
@@ -344,6 +345,8 @@ export class StockService {
         estado: 'pendiente',
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
         idUsuario: idUsuario,
+        kmCalculado: dto.kmCalculado || null, // Puede ser null si no se calcula
+        tiempoCalculado: dto.tiempoCalculado || null, // Puede ser null si
       });
 
       const savedHeader = await queryRunner.manager.save(header);
@@ -503,6 +506,7 @@ export class StockService {
 
       // 5. Actualizar estado del encabezado
       envio.estado = dto.estado;
+      envio.fechaFinalizacion = new Date();
       await queryRunner.manager.save(envio);
 
       await queryRunner.commitTransaction();

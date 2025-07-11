@@ -26,4 +26,10 @@ export class EnviosHeader {
 
     @OneToMany(() => EnvioPedido, (envio) => envio.envioHeader)
     envioPedido: EnvioPedido[];
+
+    @Column({ name: 'km_calculado', type: 'varchar', nullable: true })
+    kmCalculado?: string; // Opcional, si se calcula la distancia
+
+    @Column({ name: 'tiempo_calculado', type: 'varchar', nullable: true })
+    tiempoCalculado?: string; // Opcional, si se calcula el tiempo
 }
