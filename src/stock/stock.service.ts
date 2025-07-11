@@ -207,6 +207,7 @@ export class StockService {
       order: {
         fechaPedido: 'DESC',
       },
+      take: 200, // Limitar a los últimos 50 pedidos
     });
   }
 
@@ -318,6 +319,7 @@ export class StockService {
       order: {
         fechaCreacion: 'DESC',
       },
+      take: 50, // Limitar a los últimos 100 envíos
     });
   }
 
