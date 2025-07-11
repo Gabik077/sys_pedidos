@@ -316,7 +316,7 @@ export class StockService {
       where: { estado: estadoEnvio }, // Filtrar solo envíos pendientes
       relations: ['envioPedido', 'envioPedido.movil', 'envioPedido.pedido', 'envioPedido.pedido.cliente', 'envioPedido.pedido.detalles', 'envioPedido.pedido.detalles.producto'],
       order: {
-        fechaCreacion: 'ASC',
+        fechaCreacion: 'DESC',
       },
     });
   }
