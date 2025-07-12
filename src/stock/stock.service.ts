@@ -345,6 +345,10 @@ export class StockService {
       // 1. Crear encabezado
       const header = this.headerRepo.create({
         estado: 'pendiente',
+        inicioRutaLat: dto.origenLat ? parseFloat(dto.origenLat.toString()) : 0.0, // Puede ser 0 si no se calcula
+        inicioRutaLon: dto.origenLon ? parseFloat(dto.origenLon.toString()) : 0.0, // Puede ser 0 si no se calcula
+        finRutaLat: dto.destinoLat ? parseFloat(dto.destinoLat.toString()) : 0.0, // Puede ser 0 si no se calcula
+        finRutaLon: dto.destinoLon ? parseFloat(dto.destinoLon.toString()) : 0.0, // Puede ser 0 si no se calcula
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
         idUsuario: idUsuario,
         kmCalculado: dto.kmCalculado || null, // Puede ser null si no se calcula

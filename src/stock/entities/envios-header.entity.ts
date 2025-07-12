@@ -24,6 +24,18 @@ export class EnviosHeader {
     @Column({ name: 'id_usuario', type: 'int' })
     idUsuario: number;
 
+    @Column({ name: 'inicio_ruta_lat', type: 'float' })
+    inicioRutaLat: number;
+
+    @Column({ name: 'fin_ruta_lat', type: 'float' })
+    finRutaLat: number;
+
+    @Column({ name: 'inicio_ruta_lon', type: 'float' })
+    inicioRutaLon: number;
+
+    @Column({ name: 'fin_ruta_lon', type: 'float' })
+    finRutaLon: number;
+
     @OneToMany(() => EnvioPedido, (envio) => envio.envioHeader)
     envioPedido: EnvioPedido[];
 
