@@ -2,7 +2,6 @@
 import {
     IsString,
     IsOptional,
-    IsEmail,
     IsNumber,
     IsNotEmpty,
     MaxLength,
@@ -36,7 +35,6 @@ export class CreateClientDto {
 
     @IsString()
     @IsOptional()
-    @IsEmail({}, { message: 'Correo electrónico no válido' })
     @MaxLength(100)
     email?: string;
 
