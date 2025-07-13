@@ -11,6 +11,8 @@ import { CrearPedidoDto } from './dto/create-pedido.dto';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { EstadoEnvioDto } from './dto/estado-envio.dto';
 import { User } from 'src/users/user.decorator';
+import { MovilPedido } from './entities/movil-pedido.entity';
+import { CreateMovilDto } from './dto/create-movil.dto';
 
 @Controller('stock')
 export class StockController {
@@ -22,6 +24,26 @@ export class StockController {
   async getMoviles() {
     return this.stockService.getMoviles();
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
+  @Post('createMovil')
+  async createMovil(@Body() movil: CreateMovilDto) {
+    return this.stockService.createMovil(movil);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
+  @Post('editMovil')
+  async editMovil(@Body() movil: CreateMovilDto, id: number) {
+    return this.stockService.editMovil(id, movil);
+  }
+
+  @Delete('/movil:id')
+  removeMovil(@Param('id') id: string) {
+    return this.stockService.deleteMovil(+id);
+  }
+
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)

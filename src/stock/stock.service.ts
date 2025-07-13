@@ -23,6 +23,7 @@ import { EnviosHeader } from './entities/envios-header.entity';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { EstadoEnvioDto } from './dto/estado-envio.dto';
 import { env } from 'process';
+import { CreateMovilDto } from './dto/create-movil.dto';
 
 @Injectable()
 export class StockService {
@@ -50,6 +51,48 @@ export class StockService {
         nombreMovil: true,
       },
     });
+  }
+
+  async createMovil(movil: CreateMovilDto) {
+    try {
+      const existingMovil = await this.movilRepository.findOneBy({
+        nombreMovil: movil.nombreMovil,
+      });
+      if (existingMovil) {
+        throw new Error(`Movil with name ${movil.nombreMovil} already exists`);
+      }
+      const newMovil = this.movilRepository.create({
+        nombreChofer: movil.nombreChofer,
+        chapaMovil: movil.chapaMovil,
+        nombreMovil: movil.nombreMovil,
+        telefonoChofer: movil.telefonoChofer,
+        tipoMovil: movil.tipoMovil || 'camion',
+      });
+
+      await this.movilRepository.save(newMovil);
+
+      return { status: 'ok', message: 'Movil creado con éxito' };
+    } catch (error) {
+      return { status: 'error', message: `Error al crear movil: ${error.message}` };
+    }
+
+  }
+
+  async editMovil(id: number, movil: CreateMovilDto): Promise<MovilPedido> {
+    const existingMovil = await this.movilRepository.findOneBy({ id });
+    if (!existingMovil) {
+      throw new Error(`Movil with ID ${id} not found`);
+    }
+    const updatedMovil = Object.assign(existingMovil, movil);
+    return this.movilRepository.save(updatedMovil);
+  }
+
+  async deleteMovil(id: number): Promise<void> {
+    const movil = await this.movilRepository.findOneBy({ id });
+    if (!movil) {
+      throw new Error(`Movil with ID ${id} not found`);
+    }
+    await this.movilRepository.remove(movil);
   }
 
 
