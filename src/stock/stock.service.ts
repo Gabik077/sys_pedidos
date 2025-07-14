@@ -342,7 +342,7 @@ export class StockService {
       select: {
         id: true,
         cantidad_disponible: true,
-
+        cantidad_reservada: true,
         producto: {
           id: true,
           nombre: true,

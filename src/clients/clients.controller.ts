@@ -35,14 +35,14 @@ export class ClientsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get(':id')
   async getClienteById(@Param('id') id: string) {
     return this.clientsService.getClienteById(+id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get()
   async getClientes() {
     return this.clientsService.getClientes();
@@ -50,7 +50,7 @@ export class ClientsController {
 
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.clientsService.remove(id);

@@ -19,28 +19,28 @@ export class StockController {
   constructor(private readonly stockService: StockService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('moviles')
   async getMoviles() {
     return this.stockService.getMoviles();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('movil/:id')
   async getMobileById(@Param('id') id: string) {
     return this.stockService.getMovilById(+id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('createMovil')
   async createMovil(@Body() movil: CreateMovilDto) {
     return this.stockService.createMovil(movil);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('editMovil/:id')
   async editMovil(@Param('id') id: string, @Body() movil: CreateMovilDto) {
     return this.stockService.editMovil(+id, movil);
@@ -53,20 +53,20 @@ export class StockController {
 
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('getPedidos')
   async getPedidos(@Query('estadoPedido') estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
     return this.stockService.getPedidosPorEstado(estadoPedido);
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('getEnvios')
   async getEnvios(@Query('estadoEnvio') estadoEnvio: string) {
     return this.stockService.getEnviosPorEstado(estadoEnvio);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('envio')
   async crearEnvio(@Body() dto: CreateEnvioDto,
     @User('id_empresa') idEmpresa: number,
@@ -76,7 +76,7 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('guardarEstadoPedido')
   async guardarEstadoPedido(
     @Body() dto: EstadoEnvioDto,
@@ -86,7 +86,7 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('pedido')
   async registrarPedido(@Body() dto: CrearPedidoDto,
     @User('id_empresa') idEmpresa: number,
@@ -96,7 +96,7 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Comprador)
+  @Roles(Role.Admin, Role.Comprador, Role.SysAdmin)
   @Post('entrada')
   async registrarEntradaStock(@Body() dto: CreateStockDto,
     @User('id_empresa') idEmpresa: number,
@@ -106,7 +106,7 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('salida')
   async registrarSalidaStock(@Body() dto: StockVentaDto,
     @User('id_empresa') idEmpresa: number,

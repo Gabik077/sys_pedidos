@@ -14,7 +14,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Get('roles')
   getRoles(): Promise<RoleDto[]> {
 
@@ -23,34 +23,34 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.SysAdmin)
   @Post()
   create(@Body() createUserDto: CreateUserDto, @UserDec('id_empresa') idEmpresa: number) {
     return this.usersService.create(createUserDto, idEmpresa);
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Get()
   findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Get(':id')
   findOne(@Param('id') id: number): Promise<User> {
     return this.usersService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.SysAdmin)
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return await this.usersService.update(+id, updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.SysAdmin)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.usersService.remove(+id);

@@ -16,7 +16,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Comprador, Role.Vendedor)
+  @Roles(Role.Admin, Role.Comprador, Role.Vendedor, Role.SysAdmin)
   @Get('unidades')
   getUnidades(): Promise<UnidadesDto[]> {
 
@@ -24,21 +24,21 @@ export class ProductsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Post()
   create(@Body() createProductDto: CreateProductDto, @User('id_empresa') idEmpresa: number) {
     return this.productsService.create(createProductDto, idEmpresa);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Comprador, Role.Vendedor)
+  @Roles(Role.Admin, Role.Comprador, Role.Vendedor, Role.SysAdmin)
   @Get('proveedores')
   getProveedores() {
     return this.productsService.getProveedores();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Comprador, Role.Vendedor)
+  @Roles(Role.Admin, Role.Comprador, Role.Vendedor, Role.SysAdmin)
   @Get()
   findAll() {
     return this.productsService.findAll();
@@ -50,14 +50,14 @@ export class ProductsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Put(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @User('id_empresa') idEmpresa: number) {
     return this.productsService.update(+id, updateProductDto, idEmpresa);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
