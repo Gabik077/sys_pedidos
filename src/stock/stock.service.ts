@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStockDto } from './dto/create-stock.dto';
-import { UpdateStockDto } from './dto/update-stock.dto';
 import { Compra } from './entities/compras.entity';
 import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
 import { EntradaStock } from './entities/entradas-stock.entity';
@@ -12,8 +11,6 @@ import { SalidaStock } from './entities/salidas-stock.entity';
 import { StockVentaDto } from './dto/stock-venta.dto';
 import { Venta } from './entities/ventas.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cliente } from '../clients/entities/cliente.entity';
-import { stat } from 'fs';
 import { MovilPedido } from './entities/movil-pedido.entity';
 import { Pedido } from './entities/pedido.entity';
 import { DetallePedido } from './entities/detalle-pedido.entity';
@@ -53,6 +50,14 @@ export class StockService {
     });
   }
 
+  async getMovilById(id: number): Promise<MovilPedido> {
+    const movil = await this.movilRepository.findOneBy({ id });
+    if (!movil) {
+      throw new Error(`Movil with ID ${id} not found`);
+    }
+    return movil;
+  }
+
   async createMovil(movil: CreateMovilDto) {
     try {
       const existingMovil = await this.movilRepository.findOneBy({
@@ -78,21 +83,32 @@ export class StockService {
 
   }
 
-  async editMovil(id: number, movil: CreateMovilDto): Promise<MovilPedido> {
+  async editMovil(id: number, movil: CreateMovilDto) {
     const existingMovil = await this.movilRepository.findOneBy({ id });
     if (!existingMovil) {
       throw new Error(`Movil with ID ${id} not found`);
     }
-    const updatedMovil = Object.assign(existingMovil, movil);
-    return this.movilRepository.save(updatedMovil);
+    try {
+      const updatedMovil = Object.assign(existingMovil, movil);
+      await this.movilRepository.save(updatedMovil)
+    } catch (error) {
+      return { status: 'error', message: `Error al editar movil: ${error.message}` };
+    }
+
+    return { status: 'ok', message: 'Movil actualizado con éxito' };
   }
 
-  async deleteMovil(id: number): Promise<void> {
+  async deleteMovil(id: number) {
     const movil = await this.movilRepository.findOneBy({ id });
     if (!movil) {
       throw new Error(`Movil with ID ${id} not found`);
     }
-    await this.movilRepository.remove(movil);
+    try {
+      await this.movilRepository.delete(id);
+      return { status: 'ok', message: 'Movil eliminado con éxito' };
+    } catch (error) {
+      return { status: 'error', message: `Error al eliminar movil: ${error.message}` };
+    }
   }
 
 
@@ -571,17 +587,4 @@ export class StockService {
   }
 
 
-
-
-  findOne(id: number) {
-    return `This action returns a #${id} stock`;
-  }
-
-  update(id: number, updateStockDto: UpdateStockDto) {
-    return `This action updates a #${id} stock`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} stock`;
-  }
 }

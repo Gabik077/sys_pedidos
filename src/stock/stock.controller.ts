@@ -27,6 +27,13 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
+  @Get('movil/:id')
+  async getMobileById(@Param('id') id: string) {
+    return this.stockService.getMovilById(+id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor)
   @Post('createMovil')
   async createMovil(@Body() movil: CreateMovilDto) {
     return this.stockService.createMovil(movil);
@@ -34,12 +41,12 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor)
-  @Post('editMovil')
-  async editMovil(@Body() movil: CreateMovilDto, id: number) {
-    return this.stockService.editMovil(id, movil);
+  @Post('editMovil/:id')
+  async editMovil(@Param('id') id: string, @Body() movil: CreateMovilDto) {
+    return this.stockService.editMovil(+id, movil);
   }
 
-  @Delete('/movil:id')
+  @Delete('movil/:id')
   removeMovil(@Param('id') id: string) {
     return this.stockService.deleteMovil(+id);
   }
@@ -120,18 +127,5 @@ export class StockController {
     return this.stockService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.stockService.findOne(+id);
-  }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStockDto: UpdateStockDto) {
-    return this.stockService.update(+id, updateStockDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.stockService.remove(+id);
-  }
 }
