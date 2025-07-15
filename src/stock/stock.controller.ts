@@ -47,6 +47,7 @@ export class StockController {
   }
 
   @Delete('movil/:id')
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   removeMovil(@Param('id') id: string) {
     return this.stockService.deleteMovil(+id);
   }
@@ -115,13 +116,15 @@ export class StockController {
     return this.stockService.registrarVentaYSalidaStock(dto, idEmpresa, idUsuario);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Comprador, Role.SysAdmin)
   @Post()
   create(@Body() createStockDto: CreateStockDto) {
     return this.stockService.create(createStockDto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Comprador)
+  @Roles(Role.Admin, Role.Comprador, Role.SysAdmin)
   @Get()
   findAll() {
     return this.stockService.findAll();
