@@ -1,0 +1,18 @@
+# Node modules y build
+node_modules
+dist
+
+# Archivos de sistema
+.DS_Store
+npm-debug.log
+yarn-error.log
+
+# Config locales y entornos
+.env*
+.vscode
+.idea
+
+# Otros
+*.log
+coverage
+test-results
