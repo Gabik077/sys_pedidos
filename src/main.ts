@@ -9,7 +9,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://syspedidos.gabidev.tech'],
     methods: 'GET,POST,PUT,DELETE,OPTIONS,PATH',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
