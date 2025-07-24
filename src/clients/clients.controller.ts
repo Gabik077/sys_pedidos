@@ -13,7 +13,7 @@ export class ClientsController {
   constructor(private readonly clientsService: ClientsService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Post()
   create(
     @Body() createClientDto: CreateClientDto,
@@ -23,7 +23,7 @@ export class ClientsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.SysAdmin)
   @Post(':id')
   updateClient(
     @Param('id', ParseIntPipe) id: number,
