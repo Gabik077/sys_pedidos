@@ -166,7 +166,6 @@ export class StockService {
           stock.cantidad_disponible += producto.cantidad;
           await queryRunner.manager.save(stock);
         } else {
-          console.log("No existe stock para el producto, creando nuevo registro", producto.id_producto);
           stock = queryRunner.manager.create(Stock, { // 5- inserta en tabla stock (actualiza cantidad)
             producto: { id: producto.id_producto },
             cantidad_disponible: producto.cantidad,
@@ -193,6 +192,15 @@ export class StockService {
     idEmpresa: number,
     idUsuario: number
   ) {
+
+    if (dto.productos.length === 0) {
+      return { status: 'error', message: 'Debe agregar al menos un producto' };
+    }
+
+    if (dto.total_venta <= 0) {
+      return { status: 'error', message: 'El total de la venta debe ser mayor a 0' };
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('SERIALIZABLE');
