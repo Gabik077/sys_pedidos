@@ -118,6 +118,11 @@ export class StockService {
     idEmpresa: number,
     idUsuario: number
   ) {
+
+    if (dto.productos.length === 0) {
+      return { status: 'error', message: 'Debe agregar al menos un producto' };
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('SERIALIZABLE');
