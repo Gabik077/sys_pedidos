@@ -73,4 +73,7 @@ export class Product {
     @ManyToOne(() => Proveedor, (proveedor) => proveedor.products, { nullable: false })
     @JoinColumn({ name: "id_proveedor" }) // FK en DB
     proveedor: Proveedor;
+
+    @Column({ default: false })
+    is_combo?: boolean; // Indica si es un combo
 }

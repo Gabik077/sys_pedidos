@@ -9,6 +9,8 @@ import { UnidadMedida } from './products/entities/unidad.entity';
 import { Proveedor } from './products/entities/proveedor.entity';
 import { StockModule } from './stock/stock.module';
 import { ClientsModule } from './clients/clients.module';
+import { ComboDetalle } from './products/entities/combo-detalle.entity';
+import { ComboHeader } from './products/entities/combo-header.entity';
 
 
 @Module({
@@ -33,7 +35,9 @@ import { ClientsModule } from './clients/clients.module';
         entities: [
           Product,
           UnidadMedida,
-          Proveedor
+          Proveedor,
+          ComboHeader,
+          ComboDetalle
         ],
       }),
     }),

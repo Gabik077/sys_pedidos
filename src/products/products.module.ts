@@ -5,9 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { UnidadMedida } from './entities/unidad.entity';
 import { Proveedor } from './entities/proveedor.entity';
+import { ComboHeader } from './entities/combo-header.entity';
+import { ComboDetalle } from './entities/combo-detalle.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, UnidadMedida, Proveedor])],
+  imports: [TypeOrmModule.forFeature([Product, UnidadMedida, Proveedor, ComboHeader, ComboDetalle])],
   controllers: [ProductsController],
   providers: [ProductsService],
 })

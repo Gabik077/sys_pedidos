@@ -68,4 +68,15 @@ export class CreateProductDto {
     @IsOptional()
     @IsString()
     foto_path?: string;
+
+    @IsOptional()
+    comboData?: {
+        nombre_combo: string;
+        descripcion_combo?: string;
+        id_producto_combo: number;
+        detalles: {
+            id_producto: number;
+            cantidad: number;
+        }[];
+    };
 }
