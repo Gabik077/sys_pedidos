@@ -339,7 +339,6 @@ export class StockService {
         await queryRunner.manager.save(Stock, stock);
 
         // Verificar si es combo
-        console.log('Combo encontrado producto.id_producto :', producto.id_producto);
         const productData = await this.productRepository.findOneBy({ id: producto.id_producto });
 
         if (!productData) {
@@ -405,15 +404,43 @@ export class StockService {
     return stock;
   }
 
-  async getEnviosPorEstado(estadoEnvio: String): Promise<EnviosHeader[]> {
-    return this.headerRepo.find({
-      where: { estado: estadoEnvio }, // Filtrar solo envíos pendientes
-      relations: ['envioPedido', 'envioPedido.movil', 'envioPedido.pedido', 'envioPedido.pedido.cliente', 'envioPedido.pedido.detalles', 'envioPedido.pedido.detalles.producto'],
-      order: {
-        fechaCreacion: 'DESC',
-      },
-      take: 50, // Limitar a los últimos 100 envíos
-    });
+  /*async getEnviosPorEstado(estadoEnvio: String): Promise<EnviosHeader[]> {
+     return this.headerRepo.find({
+       where: { estado: estadoEnvio }, // Filtrar solo envíos pendientes
+       relations: ['envioPedido', 'envioPedido.movil', 'envioPedido.pedido', 'envioPedido.pedido.cliente', 'envioPedido.pedido.detalles', 'envioPedido.pedido.detalles.producto'],
+       order: {
+         fechaCreacion: 'DESC',
+       },
+       take: 50, // Limitar a los últimos 100 envíos
+     });
+   }*/
+  async getEnviosPorEstado(estadoEnvio: string): Promise<EnviosHeader[]> {
+    const headers = await this.headerRepo
+      .createQueryBuilder('header')
+      .leftJoinAndSelect('header.envioPedido', 'envioPedido')
+      .leftJoinAndSelect('envioPedido.movil', 'movil')
+      .leftJoinAndSelect('envioPedido.pedido', 'pedido')
+      .leftJoinAndSelect('pedido.cliente', 'cliente')
+      .leftJoinAndSelect('pedido.detalles', 'detalle')
+      .leftJoinAndSelect('detalle.producto', 'producto')
+
+      // Si el producto es combo, obtener comboHeader
+      .leftJoinAndMapOne(
+        'producto.comboHeader',
+        'combo_header',
+        'combo',
+        'combo.productoCombo.id = producto.id'
+      )
+      // Obtener detalles del combo y los productos
+      .leftJoinAndSelect('combo.detalles', 'comboDetalles')
+      .leftJoinAndSelect('comboDetalles.producto', 'comboDetalleProducto')
+
+      .where('header.estado = :estado', { estado: estadoEnvio })
+      .orderBy('header.fechaCreacion', 'DESC')
+      .take(50)
+      .getMany();
+
+    return headers;
   }
 
   async crearEnvio(dto: CreateEnvioDto, idEmpresa: number, idUsuario: number) {

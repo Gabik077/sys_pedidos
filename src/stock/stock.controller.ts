@@ -129,7 +129,8 @@ export class StockController {
   findAll() {
     return this.stockService.findAll();
   }
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('combo/:id')
   findComboById(@Param('id') id: string) {
     return this.stockService.findComboById(+id);
