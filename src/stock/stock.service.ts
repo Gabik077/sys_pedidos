@@ -4,7 +4,7 @@ import { Compra } from './entities/compras.entity';
 import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
 import { EntradaStock } from './entities/entradas-stock.entity';
 import { Product } from 'src/products/entities/product.entity';
-import { DataSource, Repository, In } from 'typeorm';
+import { DataSource, Repository, In, QueryRunner, Code } from 'typeorm';
 import { Stock } from './entities/stock.entity.dto';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
 import { SalidaStock } from './entities/salidas-stock.entity';
@@ -21,6 +21,7 @@ import { CreateEnvioDto } from './dto/create-envio.dto';
 import { EstadoEnvioDto } from './dto/estado-envio.dto';
 import { env } from 'process';
 import { CreateMovilDto } from './dto/create-movil.dto';
+import { ComboHeader } from 'src/products/entities/combo-header.entity';
 
 @Injectable()
 export class StockService {
@@ -36,6 +37,10 @@ export class StockService {
     @InjectRepository(Stock)
     private stockRepository: Repository<Stock>,
     private readonly dataSource: DataSource,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+    @InjectRepository(ComboHeader)
+    private comboRepository: Repository<ComboHeader>,
   ) { }
 
   async getMoviles(): Promise<MovilPedido[]> {
@@ -330,15 +335,31 @@ export class StockService {
 
         // Actualizar stock
         stock.cantidad_reservada += producto.cantidad;
-        // stock.cantidad_disponible -= producto.cantidad; // Reservamos el stock hasta que se confirme el pedido, despues se descuenta
+        stock.fecha_actualizacion = new Date();
         await queryRunner.manager.save(Stock, stock);
+
+        // Verificar si es combo
+        console.log('Combo encontrado producto.id_producto :', producto.id_producto);
+        const productData = await this.productRepository.findOneBy({ id: producto.id_producto });
+
+        if (!productData) {
+          throw new Error(`Producto con ID ${producto.id_producto} no encontrado`);
+        }
+        if (productData.is_combo) {//buscar combo si es un combo
+          const combo = await this.findComboById(productData.id);
+          //extraer productos del combo
+          for (const comboDetalle of combo.detalles) {
+            await this.agregarStockReservado(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad, comboDetalle.producto.nombre);
+          }
+        }
+
       }
 
       await queryRunner.commitTransaction();
       return { status: 'ok', id_pedido: pedidoGuardado.id };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new Error(`Error al crear el pedido: ${error.message}`);
+      return { status: 'error', message: `Error al crear el pedido: ${error.message}` };
     } finally {
       await queryRunner.release();
     }
@@ -552,11 +573,20 @@ export class StockService {
             if (!stock || stock.cantidad_disponible < detalle.cantidad || stock.cantidad_reservada < detalle.cantidad) {
               throw new Error(`Stock insuficiente para producto ${detalle.producto.nombre}`);
             }
+            await this.restarStockProducto(queryRunner, detalle.producto.id, detalle.cantidad);
 
-            stock.cantidad_disponible -= detalle.cantidad;
-            stock.cantidad_reservada -= detalle.cantidad;
-            stock.fecha_actualizacion = new Date();
-            await queryRunner.manager.save(stock);
+            // Verificar si es combo
+            const productData = await this.productRepository.findOneBy({ id: detalle.producto.id });
+            if (!productData) {
+              throw new Error(`Producto con ID ${detalle.producto.id} no encontrado`);
+            }
+            if (productData.is_combo) {//buscar combo si es un combo
+              const combo = await this.findComboById(productData.id);
+              //extraer productos del combo
+              for (const comboDetalle of combo.detalles) {
+                await this.restarStockProducto(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad);
+              }
+            }
 
             const salidaDetalle = queryRunner.manager.create(SalidaStock, {
               salida_general: savedSalidaGeneral,
@@ -570,9 +600,21 @@ export class StockService {
             await queryRunner.manager.update(DetallePedido, detalle.id, { estado: 'entregado' });
           } else if (dto.estado === 'cancelado') {
             if (stock && stock.cantidad_reservada >= detalle.cantidad) {
-              stock.cantidad_reservada -= detalle.cantidad;
-              stock.fecha_actualizacion = new Date();
-              await queryRunner.manager.save(stock);
+
+              await this.restarStockReservado(queryRunner, detalle.producto.id, detalle.cantidad);
+
+              // Verificar si es combo
+              const productData = await this.productRepository.findOneBy({ id: detalle.producto.id });
+              if (!productData) {
+                throw new Error(`Producto con ID ${detalle.producto.id} no encontrado`);
+              }
+              if (productData.is_combo) {//buscar combo si es un combo
+                const combo = await this.findComboById(productData.id);
+                //extraer productos del combo
+                for (const comboDetalle of combo.detalles) {
+                  await this.restarStockReservado(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad);
+                }
+              }
             }
             await queryRunner.manager.update(DetallePedido, detalle.id, { estado: 'cancelado' });
           }
@@ -599,5 +641,55 @@ export class StockService {
     }
   }
 
+  async findComboById(id: number): Promise<ComboHeader> {
+    return this.comboRepository.findOne({
+      where: { productoCombo: { id } },
+      relations: ['detalles'],
+    });
+  }
+
+  async restarStockProducto(queryRunner: QueryRunner, idProducto: number, cantidad: number) {
+    const stock = await queryRunner.manager.findOne(Stock, {
+      where: { producto: { id: idProducto } },
+      lock: { mode: 'pessimistic_write' }
+    });
+
+    if (!stock || stock.cantidad_disponible < cantidad) {
+      throw new Error(`Stock insuficiente para el producto del combo `);
+    }
+
+    stock.cantidad_disponible -= cantidad;
+    stock.cantidad_reservada -= cantidad;
+    stock.fecha_actualizacion = new Date();
+    await queryRunner.manager.save(stock);
+  }
+
+  async agregarStockReservado(queryRunner: QueryRunner, idProducto: number, cantidad: number, nombreProducto?: string) {
+    const comboStock = await queryRunner.manager.findOne(Stock, {
+      where: { producto: { id: idProducto } },
+      lock: { mode: 'pessimistic_write' }
+    });
+
+    if (!comboStock || comboStock.cantidad_disponible < cantidad) {
+      throw new Error(`Stock insuficiente para el producto del combo: ${nombreProducto}`);
+    }
+
+    comboStock.cantidad_reservada += cantidad;
+    comboStock.fecha_actualizacion = new Date();
+    await queryRunner.manager.save(comboStock);
+  }
+  async restarStockReservado(queryRunner: QueryRunner, idProducto: number, cantidad: number) {
+    const comboStock = await queryRunner.manager.findOne(Stock, {
+      where: { producto: { id: idProducto } },
+      lock: { mode: 'pessimistic_write' }
+    });
+
+    if (!comboStock || comboStock.cantidad_disponible < cantidad) {
+      throw new Error(`Stock insuficiente para el producto del combo `);
+    }
+    comboStock.cantidad_reservada -= cantidad;
+    comboStock.fecha_actualizacion = new Date();
+    await queryRunner.manager.save(comboStock);
+  }
 
 }

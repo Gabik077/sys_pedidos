@@ -130,5 +130,10 @@ export class StockController {
     return this.stockService.findAll();
   }
 
+  @Get('combo/:id')
+  findComboById(@Param('id') id: string) {
+    return this.stockService.findComboById(+id);
+  }
+
 
 }
