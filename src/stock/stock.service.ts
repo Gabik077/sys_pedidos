@@ -247,9 +247,6 @@ export class StockService {
           lock: { mode: 'pessimistic_write' }
         });
 
-        if (!stock || (stock.cantidad_disponible - stock.cantidad_reservada) < producto.cantidad) {
-          return { status: 'error', message: `Stock insuficiente para el producto ID ${producto.id_producto}` };
-        }
 
         stock.cantidad_disponible -= producto.cantidad;
         stock.fecha_actualizacion = new Date();
@@ -319,9 +316,9 @@ export class StockService {
           };
         }
 
-        if ((stock.cantidad_disponible - stock.cantidad_reservada) < producto.cantidad) {
+        /*if ((stock.cantidad_disponible - stock.cantidad_reservada) < producto.cantidad) {
           return { status: 'error', message: `Stock insuficiente para el producto ID ${producto.id_producto}` };
-        }
+        }*/ //CAMBIAR POR CONSULTA A LA TABLA PEDIDOS PARA SACAR LA CANTIDAD RESERVADA
 
         // Crear detalle pedido
         const detalle = new DetallePedido();
@@ -598,7 +595,7 @@ export class StockService {
           const stock = stockMap.get(detalle.producto.id);
 
           if (dto.estado === 'entregado') {
-            if (!stock || stock.cantidad_disponible < detalle.cantidad || stock.cantidad_reservada < detalle.cantidad) {
+            if (!stock || stock.cantidad_disponible < detalle.cantidad) {
               throw new Error(`Stock insuficiente para producto ${detalle.producto.nombre}`);
             }
             await this.restarStockProducto(queryRunner, detalle.producto.id, detalle.cantidad);
@@ -627,23 +624,23 @@ export class StockService {
 
             await queryRunner.manager.update(DetallePedido, detalle.id, { estado: 'entregado' });
           } else if (dto.estado === 'cancelado') {
-            if (stock && stock.cantidad_reservada >= detalle.cantidad) {
+            // if (stock && stock.cantidad_reservada >= detalle.cantidad) {REEMPLAZAR POR CONSULTA A PEDIDOS
 
-              await this.restarStockReservado(queryRunner, detalle.producto.id, detalle.cantidad);
+            await this.restarStockReservado(queryRunner, detalle.producto.id, detalle.cantidad);
 
-              // Verificar si es combo
-              const productData = await this.productRepository.findOneBy({ id: detalle.producto.id });
-              if (!productData) {
-                throw new Error(`Producto con ID ${detalle.producto.id} no encontrado`);
-              }
-              if (productData.is_combo) {//buscar combo si es un combo
-                const combo = await this.findComboById(productData.id);
-                //extraer productos del combo
-                for (const comboDetalle of combo.detalles) {
-                  await this.restarStockReservado(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad);
-                }
+            // Verificar si es combo
+            const productData = await this.productRepository.findOneBy({ id: detalle.producto.id });
+            if (!productData) {
+              throw new Error(`Producto con ID ${detalle.producto.id} no encontrado`);
+            }
+            if (productData.is_combo) {//buscar combo si es un combo
+              const combo = await this.findComboById(productData.id);
+              //extraer productos del combo
+              for (const comboDetalle of combo.detalles) {
+                await this.restarStockReservado(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad);
               }
             }
+            // }
             await queryRunner.manager.update(DetallePedido, detalle.id, { estado: 'cancelado' });
           }
         }
@@ -686,7 +683,10 @@ export class StockService {
       throw new Error(`Stock insuficiente para el producto del combo `);
     }
 
-    stock.cantidad_disponible -= cantidad;
+    if (cantidad > stock.cantidad_reservada) {
+      cantidad = stock.cantidad_reservada;
+    }
+
     stock.cantidad_reservada -= cantidad;
     stock.fecha_actualizacion = new Date();
     await queryRunner.manager.save(stock);
@@ -715,6 +715,11 @@ export class StockService {
     if (!comboStock || comboStock.cantidad_disponible < cantidad) {
       throw new Error(`Stock insuficiente para el producto del combo `);
     }
+
+    if (cantidad > comboStock.cantidad_reservada) {
+      cantidad = comboStock.cantidad_reservada;
+    }
+
     comboStock.cantidad_reservada -= cantidad;
     comboStock.fecha_actualizacion = new Date();
     await queryRunner.manager.save(comboStock);
