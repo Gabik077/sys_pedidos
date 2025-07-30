@@ -51,14 +51,14 @@ export class StockController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Delete('movil/:id')
-  removeMovil(@Param('id') id: string) {
+  async removeMovil(@Param('id') id: string) {
     return this.stockService.deleteMovil(+id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('updateEstadoPedido/:idPedido')
-  updateEstadoPedido(@Param('idPedido') idPedido: number, @Body('estado') estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
+  async updateEstadoPedido(@Param('idPedido') idPedido: number, @Body('estado') estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
     return this.stockService.updateEstadoPedido(idPedido, estado);
   }
 
@@ -70,7 +70,7 @@ export class StockController {
   }
 
   @Get('getPedido/:id')
-  getPedidoById(@Param('id') id: number) {
+  async getPedidoById(@Param('id') id: number) {
     return this.stockService.getPedidoById(id);
   }
 
@@ -114,7 +114,7 @@ export class StockController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('updatePedido/:id')
-  updatePedido(@Param('id') id: number, @Body() dto: UpdatePedidoDto) {
+  async updatePedido(@Param('id') id: number, @Body() dto: UpdatePedidoDto) {
     return this.stockService.updatePedido(id, dto);
   }
 
@@ -141,22 +141,35 @@ export class StockController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador, Role.SysAdmin)
   @Post()
-  create(@Body() createStockDto: CreateStockDto) {
+  async create(@Body() createStockDto: CreateStockDto) {
     return this.stockService.create(createStockDto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador, Role.SysAdmin)
   @Get()
-  findAll() {
+  async findAll() {
     return this.stockService.findAll();
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('combo/:id')
-  findComboById(@Param('id') id: string) {
+  async findComboById(@Param('id') id: string) {
     return this.stockService.findComboById(+id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Get('productos-en-pedidos-pendientes')
+  getProductosEnPedidosPendientesById(@Query('productos') productos: number[]) {
+    return this.stockService.getProductosEnPedidosPendientesById(productos);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Get('pedidos-pendientes')
+  async getPedidosPendientes() {
+    return this.stockService.getProdPedidosPendientes();
+  }
 
 }

@@ -830,5 +830,51 @@ export class StockService {
     }
   }
 
+  async getProductosEnPedidosPendientesById(productos: number[]): Promise<ProductoPendienteDto[]> {//que productos estan en pedidos pendientes sin nombres
+    const resultadoRaw = await this.dataSource
+      .getRepository(DetallePedido)
+      .createQueryBuilder('dp')
+      .select('dp.idProducto', 'id_producto')
+      .addSelect('SUM(dp.cantidad)', 'cantidad_total')
+      .innerJoin('dp.pedido', 'p')
+      .where('p.estado = :estado', { estado: 'pendiente' })
+      .andWhere('dp.idProducto IN (:...ids)', { ids: productos })
+      .groupBy('dp.idProducto')
+      .getRawMany();
+
+    const resultado: ProductoPendienteDto[] = resultadoRaw.map(r => ({
+      id_producto: +r.id_producto,
+      cantidad_total: +r.cantidad_total
+    }));
+
+    return resultado;
+
+  }
+
+
+  async getProdPedidosPendientes(): Promise<ProductoPendienteDto[]> { //que productos estan en pedidos pendientes con nombres
+    const resultadoRaw = await this.dataSource
+      .getRepository(DetallePedido)
+      .createQueryBuilder('dp')
+      .select('dp.idProducto', 'id_producto')
+      .addSelect('p2.nombre', 'nombre')
+      .addSelect('SUM(dp.cantidad)', 'cantidad_total')
+      .innerJoin('dp.pedido', 'p')
+      .innerJoin('productos', 'p2', 'p2.id = dp.idProducto')
+      .where('p.estado = :estado', { estado: 'pendiente' })
+      .groupBy('dp.idProducto')
+      .addGroupBy('p2.nombre')
+      .getRawMany();
+
+    const resultado: ProductoPendienteDto[] = resultadoRaw.map(r => ({
+      id_producto: +r.id_producto,
+      nombre: r.nombre,
+      cantidad_total: +r.cantidad_total
+    }));
+
+    return resultado;
+
+  }
+
 
 }
