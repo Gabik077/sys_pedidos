@@ -23,6 +23,7 @@ import { env } from 'process';
 import { CreateMovilDto } from './dto/create-movil.dto';
 import { ComboHeader } from 'src/products/entities/combo-header.entity';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
+import e from 'express';
 
 @Injectable()
 export class StockService {
@@ -829,18 +830,19 @@ export class StockService {
       throw new Error(`Stock insuficiente para el producto del combo: ${nombreProducto}`);
     }
   }
-
-  async getProductosEnPedidosPendientesById(productos: number[]): Promise<ProductoPendienteDto[]> {//que productos estan en pedidos pendientes sin nombres
+  //agrupa que productos estan en pedidos pendientes sin nombres
+  async getProductosEnPedidosPendientesById(productos: number[]): Promise<ProductoPendienteDto[]> {
     const resultadoRaw = await this.dataSource
       .getRepository(DetallePedido)
       .createQueryBuilder('dp')
       .select('dp.idProducto', 'id_producto')
       .addSelect('SUM(dp.cantidad)', 'cantidad_total')
       .innerJoin('dp.pedido', 'p')
-      .where('p.estado = :estado', { estado: 'pendiente' })
+      .where('p.estado IN (:...estados)', { estados: ['pendiente', 'en_envio'] })
       .andWhere('dp.idProducto IN (:...ids)', { ids: productos })
       .groupBy('dp.idProducto')
       .getRawMany();
+
 
     const resultado: ProductoPendienteDto[] = resultadoRaw.map(r => ({
       id_producto: +r.id_producto,
@@ -851,8 +853,8 @@ export class StockService {
 
   }
 
-
-  async getProdPedidosPendientes(): Promise<ProductoPendienteDto[]> { //que productos estan en pedidos pendientes con nombres
+  //agrupa productos en pedidos pendientes con nombres
+  async getProdPedidosPendientes(): Promise<ProductoPendienteDto[]> {
     const resultadoRaw = await this.dataSource
       .getRepository(DetallePedido)
       .createQueryBuilder('dp')
@@ -861,7 +863,7 @@ export class StockService {
       .addSelect('SUM(dp.cantidad)', 'cantidad_total')
       .innerJoin('dp.pedido', 'p')
       .innerJoin('productos', 'p2', 'p2.id = dp.idProducto')
-      .where('p.estado = :estado', { estado: 'pendiente' })
+      .where('p.estado IN (:...estados)', { estados: ['pendiente', 'envio_creado'] })
       .groupBy('dp.idProducto')
       .addGroupBy('p2.nombre')
       .getRawMany();
