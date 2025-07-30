@@ -23,7 +23,7 @@ import { env } from 'process';
 import { CreateMovilDto } from './dto/create-movil.dto';
 import { ComboHeader } from 'src/products/entities/combo-header.entity';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
-import e from 'express';
+
 
 @Injectable()
 export class StockService {
@@ -303,14 +303,25 @@ export class StockService {
   }
 
   async getPedidosPorEstado(estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado'): Promise<Pedido[]> {
-    return this.pedidoRepository.find({
+    const pedidos = await this.pedidoRepository.find({
       where: { estado: estadoPedido }, // Filtrar solo pedidos pendientes
       relations: ['cliente', 'detalles', 'detalles.producto'],
       order: {
         fechaPedido: 'DESC',
       },
-      take: 200, // Limitar a los últimos 50 pedidos
+      take: 100, // Limitar a los últimos 100 pedidos
     });
+
+    // Ordenar los detalles por nombre del producto
+    for (const pedido of pedidos) {
+      pedido.detalles.sort((a, b) => {
+        const nombreA = a.producto?.nombre?.toLowerCase() || '';
+        const nombreB = b.producto?.nombre?.toLowerCase() || '';
+        return nombreA.localeCompare(nombreB);
+      });
+    }
+
+    return pedidos;
   }
   async crearPedido(dto: CrearPedidoDto, idEmpresa: number, idUsuario: number) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -571,6 +582,7 @@ export class StockService {
 
       .where('header.estado = :estado', { estado: estadoEnvio })
       .orderBy('header.fechaCreacion', 'DESC')
+      .addOrderBy('producto.nombre', 'ASC')
       .addOrderBy('producto.id_categoria', 'ASC')
       .take(50)
       .getMany();
@@ -830,7 +842,7 @@ export class StockService {
       throw new Error(`Stock insuficiente para el producto del combo: ${nombreProducto}`);
     }
   }
-  //agrupa que productos estan en pedidos pendientes sin nombres
+  //agrupa que productos estan en pedidos pendientes (usar antes de crear un pedido o actualizar un pedido)
   async getProductosEnPedidosPendientesById(productos: number[]): Promise<ProductoPendienteDto[]> {
     const resultadoRaw = await this.dataSource
       .getRepository(DetallePedido)
