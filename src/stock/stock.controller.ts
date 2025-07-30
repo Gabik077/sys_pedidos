@@ -47,12 +47,20 @@ export class StockController {
     return this.stockService.editMovil(+id, movil);
   }
 
-  @Delete('movil/:id')
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Delete('movil/:id')
   removeMovil(@Param('id') id: string) {
     return this.stockService.deleteMovil(+id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Post('updateEstadoPedido/:idPedido')
+  updateEstadoPedido(@Param('idPedido') idPedido: number, @Body('estado') estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
+    return this.stockService.updateEstadoPedido(idPedido, estado);
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)

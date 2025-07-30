@@ -117,6 +117,32 @@ export class StockService {
     }
   }
 
+  async updateEstadoPedido(idPedido: number, estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
+
+    try {
+      const pedido = await queryRunner.manager.findOne(Pedido, { where: { id: idPedido } });
+      if (!pedido) {
+        throw new Error(`Pedido con ID ${idPedido} no encontrado`);
+      }
+
+      pedido.estado = estado;
+      await queryRunner.manager.save(pedido);
+
+      await queryRunner.commitTransaction();
+      return { status: 'ok', message: 'Estado del pedido actualizado con éxito' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+
+  }
+
 
 
   async registrarCompraYEntradaStock(
