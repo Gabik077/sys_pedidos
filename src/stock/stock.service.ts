@@ -582,8 +582,8 @@ export class StockService {
 
       .where('header.estado = :estado', { estado: estadoEnvio })
       .orderBy('header.fechaCreacion', 'DESC')
-      .addOrderBy('producto.nombre', 'ASC')
       .addOrderBy('producto.id_categoria', 'ASC')
+      .addOrderBy('producto.nombre', 'ASC')
       .take(50)
       .getMany();
 
