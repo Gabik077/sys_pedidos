@@ -22,6 +22,7 @@ import { EstadoEnvioDto } from './dto/estado-envio.dto';
 import { env } from 'process';
 import { CreateMovilDto } from './dto/create-movil.dto';
 import { ComboHeader } from 'src/products/entities/combo-header.entity';
+import { UpdatePedidoDto } from './dto/update-pedido.dto';
 
 @Injectable()
 export class StockService {
@@ -284,18 +285,37 @@ export class StockService {
       take: 200, // Limitar a los últimos 50 pedidos
     });
   }
-
-
   async crearPedido(dto: CrearPedidoDto, idEmpresa: number, idUsuario: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
+      let totalCalculado = 0;
+
+      // Calcular total con precios reales
+      for (const p of dto.productos) {
+        const producto = await queryRunner.manager.findOne(Product, {
+          where: { id: p.id_producto }
+        });
+
+        if (!producto) {
+          return {
+            status: 'error',
+            message: `Producto no encontrado`,
+          };
+        }
+
+        const precioReal = Number(producto['precio_venta']);
+        totalCalculado += precioReal * p.cantidad;
+      }
+
+
+      // Guardar el pedido
       const pedido = new Pedido();
       pedido.idCliente = dto.pedido.id_cliente;
       pedido.estado = dto.pedido.estado;
-      pedido.total = dto.total_venta;
+      pedido.total = totalCalculado; // se calcula en el back
       pedido.clienteNombre = dto.pedido.cliente_nombre;
       pedido.observaciones = dto.observaciones;
       pedido.responsable = dto.pedido.chofer;
@@ -311,55 +331,154 @@ export class StockService {
         });
 
         if (!stock) {
-          return {
-            status: 'error', message: `No hay stock para el producto ID ${producto.id_producto}`
-          };
+          throw new Error(`No hay stock para el producto ID ${producto.id_producto}`);
         }
 
-        /*if ((stock.cantidad_disponible - stock.cantidad_reservada) < producto.cantidad) {
-          return { status: 'error', message: `Stock insuficiente para el producto ID ${producto.id_producto}` };
-        }*/ //CAMBIAR POR CONSULTA A LA TABLA PEDIDOS PARA SACAR LA CANTIDAD RESERVADA
+        if (stock.cantidad_disponible < producto.cantidad) {
+          throw new Error(`No hay suficiente stock para el producto ${stock.producto.id} - ${stock.producto.nombre}`);
+        }
 
-        // Crear detalle pedido
+        const precioReal = Number(stock.producto['precio_venta']);
+
         const detalle = new DetallePedido();
         detalle.idPedido = pedidoGuardado.id;
         detalle.idProducto = producto.id_producto;
         detalle.cantidad = producto.cantidad;
         detalle.estado = 'reservado';
-        detalle.precioUnitario = Number(stock.producto['precio_venta']); // Asume que precio_venta existe
+        detalle.precioUnitario = precioReal;
 
         await queryRunner.manager.save(DetallePedido, detalle);
 
-        // Actualizar stock
-        stock.cantidad_reservada += producto.cantidad;
-        stock.fecha_actualizacion = new Date();
-        await queryRunner.manager.save(Stock, stock);
+        // Actualizar stock (NO SE RESERVA MAS EN STOCK, DIRECTAMENTE SE VA CONSULTAR PEDIDOS)
+        /* stock.cantidad_reservada += producto.cantidad;
+         stock.fecha_actualizacion = new Date();
+         await queryRunner.manager.save(Stock, stock);*/
 
         // Verificar si es combo
         const productData = await this.productRepository.findOneBy({ id: producto.id_producto });
-
         if (!productData) {
-          throw new Error(`Producto con ID ${producto.id_producto} no encontrado`);
+          throw new Error(`Producto no encontrado`);
         }
-        if (productData.is_combo) {//buscar combo si es un combo
+
+        if (productData.is_combo) {
           const combo = await this.findComboById(productData.id);
-          //extraer productos del combo
           for (const comboDetalle of combo.detalles) {
-            await this.agregarStockReservado(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad, comboDetalle.producto.nombre);
+            await this.agregarStockReservado(
+              queryRunner,
+              comboDetalle.producto.id,
+              comboDetalle.cantidad,
+              comboDetalle.producto.nombre
+            );
           }
         }
-
       }
 
       await queryRunner.commitTransaction();
       return { status: 'ok', id_pedido: pedidoGuardado.id };
     } catch (error) {
+      console.error('Error al crear el pedido:', error);
       await queryRunner.rollbackTransaction();
       return { status: 'error', message: `Error al crear el pedido: ${error.message}` };
     } finally {
       await queryRunner.release();
     }
   }
+
+  async updatePedido(idPedido: number, dto: UpdatePedidoDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
+
+    try {
+      const pedido = await queryRunner.manager.findOne(Pedido, { where: { id: idPedido } });
+      if (!pedido) {
+        throw new Error(`Pedido con ID ${idPedido} no encontrado`);
+      }
+      if (pedido.estado !== 'pendiente') {
+        throw new Error(`El pedido con ID ${idPedido} no está en estado pendiente`);
+      }
+
+      let totalCalculado = 0;
+      const detalles = await queryRunner.manager.find(DetallePedido, {
+        where: { idPedido: idPedido },
+        relations: ['producto'],
+      });
+      //merge detalle productos
+      for (const detalle of detalles) {
+        const productoDto = dto.productos.find(p => p.id_producto === detalle.idProducto);
+        if (productoDto) {
+          detalle.cantidad = productoDto.cantidad;
+          await queryRunner.manager.save(DetallePedido, detalle);
+          totalCalculado += detalle.cantidad * detalle.precioUnitario;
+        } else {
+          // Si el producto no está en el DTO, eliminar el detalle
+          await queryRunner.manager.remove(DetallePedido, detalle);
+        }
+      }
+      //agregar nuevos productos en dealles
+      for (const producto of dto.productos) {
+        const detalleExistente = detalles.find(d => d.idProducto === producto.id_producto);
+        if (!detalleExistente) {
+          const nuevoDetalle = new DetallePedido();
+          nuevoDetalle.idPedido = idPedido;
+          nuevoDetalle.idProducto = producto.id_producto;
+          nuevoDetalle.cantidad = producto.cantidad;
+          nuevoDetalle.estado = 'reservado';
+
+          const product = await queryRunner.manager.findOne(Product, {
+            where: { id: producto.id_producto },
+          });
+          if (!product) {
+            throw new Error(`Producto con ID ${producto.id_producto} no encontrado`);
+          }
+
+          const stock = await queryRunner.manager.findOne(Stock, {
+            where: { producto: { id: producto.id_producto } },
+            relations: ['producto'],
+          });
+          if (!stock) {
+            throw new Error(`No hay stock para el producto ID ${producto.id_producto}`);
+          }
+          if (stock.cantidad_disponible < producto.cantidad) {
+            throw new Error(`No hay suficiente stock para el producto ${stock.producto.id} - ${stock.producto.nombre}`);
+          }
+          nuevoDetalle.precioUnitario = Number(stock.producto['precio_venta']);
+          await queryRunner.manager.save(DetallePedido, nuevoDetalle);
+          totalCalculado += producto.cantidad * Number(product.precio_venta);
+        }
+
+      }
+
+      pedido.observaciones = dto.observaciones;
+      pedido.total = totalCalculado;
+
+      await queryRunner.manager.save(Pedido, pedido);
+
+      await queryRunner.commitTransaction();
+      return { status: 'ok' };
+    } catch (error) {
+      console.error('Error al actualizar el estado del pedido:', error);
+      await queryRunner.rollbackTransaction();
+      return { status: 'error', message: `Error al actualizar el estado del pedido: ${error.message}` };
+    } finally {
+      await queryRunner.release();
+    }
+
+
+  }
+
+  async getPedidoById(idPedido: number): Promise<Pedido> {
+    const pedido = await this.pedidoRepository.findOne({
+      where: { id: idPedido },
+      relations: ['cliente', 'detalles', 'detalles.producto'],
+    });
+    if (!pedido) {
+      throw new Error(`Pedido con ID ${idPedido} no encontrado`);
+    }
+    return pedido;
+  }
+
+
 
   create(createStockDto: CreateStockDto) {
     return 'This action adds a new stock';
@@ -401,16 +520,7 @@ export class StockService {
     return stock;
   }
 
-  /*async getEnviosPorEstado(estadoEnvio: String): Promise<EnviosHeader[]> {
-     return this.headerRepo.find({
-       where: { estado: estadoEnvio }, // Filtrar solo envíos pendientes
-       relations: ['envioPedido', 'envioPedido.movil', 'envioPedido.pedido', 'envioPedido.pedido.cliente', 'envioPedido.pedido.detalles', 'envioPedido.pedido.detalles.producto'],
-       order: {
-         fechaCreacion: 'DESC',
-       },
-       take: 50, // Limitar a los últimos 100 envíos
-     });
-   }*/
+
   async getEnviosPorEstado(estadoEnvio: string): Promise<EnviosHeader[]> {
     const headers = await this.headerRepo
       .createQueryBuilder('header')

@@ -13,6 +13,7 @@ import { EstadoEnvioDto } from './dto/estado-envio.dto';
 import { User } from 'src/users/user.decorator';
 import { MovilPedido } from './entities/movil-pedido.entity';
 import { CreateMovilDto } from './dto/create-movil.dto';
+import { UpdatePedidoDto } from './dto/update-pedido.dto';
 
 @Controller('stock')
 export class StockController {
@@ -59,6 +60,12 @@ export class StockController {
   async getPedidos(@Query('estadoPedido') estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
     return this.stockService.getPedidosPorEstado(estadoPedido);
   }
+
+  @Get('getPedido/:id')
+  getPedidoById(@Param('id') id: number) {
+    return this.stockService.getPedidoById(id);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('getEnvios')
@@ -94,6 +101,13 @@ export class StockController {
     @User('userId') idUsuario: number
   ) {
     return this.stockService.crearPedido(dto, idEmpresa, idUsuario);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Post('updatePedido/:id')
+  updatePedido(@Param('id') id: number, @Body() dto: UpdatePedidoDto) {
+    return this.stockService.updatePedido(id, dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
