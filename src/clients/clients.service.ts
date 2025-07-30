@@ -109,6 +109,8 @@ export class ClientsService {
         return { status: 'error', message: 'Cliente no encontrado' };
       }
       return { status: 'ok', message: 'Cliente eliminado exitosamente' };
+    }).catch((error) => {
+      return { status: 'error', message: `Error al eliminar cliente: ${error.message}` };
     });
   }
 }
