@@ -43,6 +43,15 @@ export class ClientsService {
   }
 
   async create(createClientDto: CreateClientDto, idEmpresa: number, idUsuario: number) {
+
+    const existingClient = await this.clientRepository.findOne({
+      where: { lat: createClientDto.lat, lon: createClientDto.lon },
+    });
+    if (existingClient) {
+      return { status: 'error', message: `El Cliente ${existingClient.nombre} ${existingClient.apellido} ya tiene esa latitud y longitud ` };
+    }
+
+
     const newClient = this.clientRepository.create({
       nombre: createClientDto.nombre,
       apellido: createClientDto.apellido,
