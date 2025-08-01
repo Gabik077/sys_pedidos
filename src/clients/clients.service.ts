@@ -18,28 +18,36 @@ export class ClientsService {
     idEmpresa: number,
     idUsuario: number,
   ): Promise<{ status: string; message: string }> {
-    const client = await this.clientRepository.findOne({
-      where: { id },
-    });
-    if (!client) {
-      return { status: 'error', message: 'Cliente no encontrado' };
+
+    try {
+
+      const client = await this.clientRepository.findOne({
+        where: { id },
+      });
+      if (!client) {
+        return { status: 'error', message: 'Cliente no encontrado' };
+      }
+      const updatedClient = this.clientRepository.merge(client, {
+        nombre: updateClientDto.nombre,
+        apellido: updateClientDto.apellido,
+        telefono: updateClientDto.telefono,
+        ruc: updateClientDto.ruc,
+        direccion: updateClientDto.direccion,
+        lat: updateClientDto.lat,
+        lon: updateClientDto.lon,
+        ciudad: updateClientDto.ciudad,
+        email: updateClientDto.email
+      });
+      const result = await this.clientRepository.save(updatedClient);
+      if (!result) {
+        return { status: 'error', message: 'Error al actualizar el cliente' };
+      }
+      return { status: 'ok', message: 'Cliente actualizado exitosamente' };
+    } catch (error) {
+      return { status: 'error', message: `Error al actualizar el cliente: ${error.message}` };
     }
-    const updatedClient = this.clientRepository.merge(client, {
-      nombre: updateClientDto.nombre,
-      apellido: updateClientDto.apellido,
-      telefono: updateClientDto.telefono,
-      ruc: updateClientDto.ruc,
-      direccion: updateClientDto.direccion,
-      lat: updateClientDto.lat,
-      lon: updateClientDto.lon,
-      ciudad: updateClientDto.ciudad,
-      email: updateClientDto.email
-    });
-    const result = await this.clientRepository.save(updatedClient);
-    if (!result) {
-      return { status: 'error', message: 'Error al actualizar el cliente' };
-    }
-    return { status: 'ok', message: 'Cliente actualizado exitosamente' };
+
+
   }
 
   async create(createClientDto: CreateClientDto, idEmpresa: number, idUsuario: number) {
