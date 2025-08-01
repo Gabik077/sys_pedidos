@@ -44,36 +44,43 @@ export class ClientsService {
 
   async create(createClientDto: CreateClientDto, idEmpresa: number, idUsuario: number) {
 
-    const existingClient = await this.clientRepository.findOne({
-      where: { lat: createClientDto.lat, lon: createClientDto.lon },
-    });
-    if (existingClient) {
-      return { status: 'error', message: `El Cliente ${existingClient.nombre} ${existingClient.apellido} ya tiene esa latitud y longitud ` };
+    try {
+      const existingClient = await this.clientRepository.findOne({
+        where: { lat: createClientDto.lat, lon: createClientDto.lon },
+      });
+      if (existingClient) {
+        return { status: 'error', message: `El Cliente ${existingClient.nombre} ${existingClient.apellido} ya tiene esa latitud y longitud ` };
+      }
+
+      const newClient = this.clientRepository.create({
+        nombre: createClientDto.nombre,
+        apellido: createClientDto.apellido,
+        telefono: createClientDto.telefono,
+        ruc: createClientDto.ruc,
+        direccion: createClientDto.direccion,
+        lat: createClientDto.lat,
+        lon: createClientDto.lon,
+        ciudad: createClientDto.ciudad,
+        email: createClientDto.email,
+        id_empresa: { id: idEmpresa },
+        id_usuario: { id: idUsuario },
+      });
+
+
+      const cliente = await this.clientRepository.save(newClient);
+
+      if (!cliente) {
+        return { status: 'error', message: 'Error al crear el cliente' };
+      }
+
+      return { status: 'ok', message: 'Cliente creado exitosamente' };
+
+    } catch (error) {
+      return { status: 'error', message: `Error al crear el cliente: ${error.message}` };
+
     }
 
 
-    const newClient = this.clientRepository.create({
-      nombre: createClientDto.nombre,
-      apellido: createClientDto.apellido,
-      telefono: createClientDto.telefono,
-      ruc: createClientDto.ruc,
-      direccion: createClientDto.direccion,
-      lat: createClientDto.lat,
-      lon: createClientDto.lon,
-      ciudad: createClientDto.ciudad,
-      email: createClientDto.email,
-      id_empresa: { id: idEmpresa },
-      id_usuario: { id: idUsuario },
-    });
-
-
-    const cliente = await this.clientRepository.save(newClient);
-
-    if (!cliente) {
-      return { status: 'error', message: 'Error al crear el cliente' };
-    }
-
-    return { status: 'ok', message: 'Cliente creado exitosamente' };
   }
 
   async getClienteById(id: number): Promise<Cliente | null> {
