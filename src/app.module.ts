@@ -11,6 +11,7 @@ import { StockModule } from './stock/stock.module';
 import { ClientsModule } from './clients/clients.module';
 import { ComboDetalle } from './products/entities/combo-detalle.entity';
 import { ComboHeader } from './products/entities/combo-header.entity';
+import { VendedorModule } from './vendedor/vendedor.module';
 
 
 @Module({
@@ -46,6 +47,7 @@ import { ComboHeader } from './products/entities/combo-header.entity';
     ProductsModule,
     StockModule,
     ClientsModule,
+    VendedorModule,
   ],
 
 })
