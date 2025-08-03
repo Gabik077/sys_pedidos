@@ -19,4 +19,8 @@ export class CreateVendedorDto {
     @Min(0)
     comision?: number;
 
+    @IsString()
+    @Length(1, 15)
+    telefono: string;
+
 }

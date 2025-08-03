@@ -23,6 +23,7 @@ export class VendedorService {
         comision: dto.comision || 0,
         id_empresa: idEmpresa,
         id_usuario: idUsuario,
+        telefono: dto.telefono,
       });
 
       this.vendedorRepo.save(vendedor);
@@ -55,15 +56,22 @@ export class VendedorService {
 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vendedor`;
+  async findOne(id: number) {
+    return this.vendedorRepo.findOne({ where: { id } });
   }
 
-  update(id: number, updateVendedorDto: UpdateVendedorDto) {
-    return `This action updates a #${id} vendedor`;
+  async update(id: number, updateVendedorDto: UpdateVendedorDto) {
+
+    return await this.vendedorRepo.update(id, updateVendedorDto)
+      .then(() => ({ status: 'ok', message: 'Vendedor actualizado exitosamente' }))
+      .catch(error => ({ status: 'error', message: `Error al actualizar el vendedor: ${error.message}` }));
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vendedor`;
+  async remove(id: number) {
+    return await this.vendedorRepo.delete(id)
+      .then(() => ({ status: 'ok', message: 'Vendedor eliminado exitosamente' }))
+      .catch(error => ({ status: 'error', message: `Error al eliminar el vendedor: ${error.message}` }));
   }
+
+
 }

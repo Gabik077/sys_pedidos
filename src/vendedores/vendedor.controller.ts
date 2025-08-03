@@ -24,21 +24,29 @@ export class VendedorController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.SysAdmin)
   findAll(@User('id_empresa') idEmpresa: number) {
     return this.vendedorService.findAll(idEmpresa);
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.SysAdmin)
   findOne(@Param('id') id: string) {
     return this.vendedorService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Post(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.SysAdmin)
   update(@Param('id') id: string, @Body() updateVendedorDto: UpdateVendedorDto) {
     return this.vendedorService.update(+id, updateVendedorDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.SysAdmin)
   remove(@Param('id') id: string) {
     return this.vendedorService.remove(+id);
   }

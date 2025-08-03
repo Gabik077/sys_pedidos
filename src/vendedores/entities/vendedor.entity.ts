@@ -19,6 +19,9 @@ export class Vendedor {
     @Column({ length: 15, nullable: true })
     cedula?: string;
 
+    @Column({ length: 30 })
+    telefono: string;
+
     @Column({ type: 'int', default: 0 })
     comision: number;
 
