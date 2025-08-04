@@ -751,7 +751,7 @@ export class StockService {
 
           if (dto.estado === 'entregado') {
 
-            await this.restarStockProducto(queryRunner, detalle.producto.id, detalle.cantidad);
+            await this.restarStockProducto(queryRunner, detalle.producto.id, detalle.cantidad, detalle.producto.nombre);
 
             // Verificar si es combo
             const productData = await this.productRepository.findOneBy({ id: detalle.producto.id });
@@ -762,7 +762,7 @@ export class StockService {
               const combo = await this.findComboById(productData.id);
               //extraer productos del combo
               for (const comboDetalle of combo.detalles) {
-                await this.restarStockProducto(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad);
+                await this.restarStockProducto(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad, comboDetalle.producto.nombre);
               }
             }
 
@@ -824,14 +824,14 @@ export class StockService {
     });
   }
 
-  async restarStockProducto(queryRunner: QueryRunner, idProducto: number, cantidad: number) {
+  async restarStockProducto(queryRunner: QueryRunner, idProducto: number, cantidad: number, productoNombre?: string) {
     const stock = await queryRunner.manager.findOne(Stock, {
       where: { producto: { id: idProducto } },
       lock: { mode: 'pessimistic_write' }
     });
 
     if (!stock || stock.cantidad_disponible < cantidad) {
-      throw new Error(`Stock insuficiente para el producto del combo `);
+      throw new Error(`Stock insuficiente para el producto: ${productoNombre}`);
     }
 
     stock.cantidad_disponible -= cantidad;
