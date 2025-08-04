@@ -20,6 +20,7 @@ import { EnvioPedido } from './entities/envio-pedido.entity';
 import { EnviosHeader } from './entities/envios-header.entity';
 import { ComboHeader } from 'src/products/entities/combo-header.entity';
 import { ComboDetalle } from 'src/products/entities/combo-detalle.entity';
+import { Vendedor } from 'src/vendedores/entities/vendedor.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(
@@ -41,7 +42,8 @@ import { ComboDetalle } from 'src/products/entities/combo-detalle.entity';
       EnvioPedido,
       EnviosHeader,
       ComboHeader,
-      ComboDetalle
+      ComboDetalle,
+      Vendedor
     ])],
   controllers: [StockController],
   providers: [StockService],

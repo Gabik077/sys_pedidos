@@ -23,6 +23,7 @@ import { env } from 'process';
 import { CreateMovilDto } from './dto/create-movil.dto';
 import { ComboHeader } from 'src/products/entities/combo-header.entity';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
+import { Vendedor } from 'src/vendedores/entities/vendedor.entity';
 
 
 @Injectable()
@@ -43,6 +44,8 @@ export class StockService {
     private productRepository: Repository<Product>,
     @InjectRepository(ComboHeader)
     private comboRepository: Repository<ComboHeader>,
+    @InjectRepository(Vendedor)
+    private vendedorRepository: Repository<Vendedor>,
   ) { }
 
   async getMoviles(): Promise<MovilPedido[]> {
@@ -348,6 +351,7 @@ export class StockService {
         totalCalculado += precioReal * p.cantidad;
       }
 
+      const vendedor = await this.vendedorRepository.findOneBy({ id: dto.vendedorId });
 
       // Guardar el pedido
       const pedido = new Pedido();
@@ -360,6 +364,7 @@ export class StockService {
       pedido.empresa = idEmpresa;
       pedido.id_usuario = idUsuario;
       pedido.vendedorId = dto.vendedorId || 1; // default vendedor ID 1
+      pedido.vendedorNombre = vendedor ? `${vendedor.nombre} ${vendedor.apellido}` : 'No asignado'; // Nombre del vendedor
 
       const pedidoGuardado = await queryRunner.manager.save(Pedido, pedido);
 

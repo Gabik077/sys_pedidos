@@ -46,6 +46,9 @@ export class Pedido {
     @Column({ name: 'vendedor_id', type: 'int', nullable: false })
     vendedorId: number;
 
+    @Column({ name: 'vendedor_nombre', type: 'varchar', length: 20 })
+    vendedorNombre: string;
+
     @Column({ name: 'id_usuario', type: 'int' })
     id_usuario: number;
 
