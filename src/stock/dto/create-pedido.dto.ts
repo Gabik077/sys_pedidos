@@ -4,6 +4,7 @@ export class CrearPedidoDto {
     observaciones?: string;
     total_venta: number;
     iva: number;
+    vendedorId?: number;
     pedido: {
         id_cliente: number;
         cliente_nombre: string;

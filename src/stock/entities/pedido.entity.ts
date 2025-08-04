@@ -43,6 +43,9 @@ export class Pedido {
     @Column({ name: 'id_empresa' })
     empresa: number;
 
+    @Column({ name: 'vendedor_id', type: 'int', nullable: false })
+    vendedorId: number;
+
     @Column({ name: 'id_usuario', type: 'int' })
     id_usuario: number;
 
