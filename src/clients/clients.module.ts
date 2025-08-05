@@ -3,13 +3,15 @@ import { ClientsService } from './clients.service';
 import { ClientsController } from './clients.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
+import { Ciudad } from './entities/ciudad.entity';
 
 @Module({
   controllers: [ClientsController],
   providers: [ClientsService],
   imports: [TypeOrmModule.forFeature(
     [
-      Cliente
+      Cliente,
+      Ciudad
     ]
   )],
 })

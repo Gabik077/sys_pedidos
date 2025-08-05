@@ -36,6 +36,13 @@ export class ClientsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Get('ciudades')
+  getCiudades() {
+    return this.clientsService.getCiudades();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get(':id')
   async getClienteById(@Param('id') id: string) {
     return this.clientsService.getClienteById(+id);

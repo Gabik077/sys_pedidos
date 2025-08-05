@@ -4,13 +4,21 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { Cliente } from './entities/cliente.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
+import { Ciudad } from './entities/ciudad.entity';
 
 @Injectable()
 export class ClientsService {
   constructor(
     @InjectRepository(Cliente)
     private clientRepository: Repository<Cliente>,
+    @InjectRepository(Ciudad)
+    private ciudadRepository: Repository<Ciudad>,
   ) { }
+
+
+  async getCiudades(): Promise<Ciudad[]> {
+    return await this.ciudadRepository.find();
+  }
 
   async updateClient(
     id: number,
