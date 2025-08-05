@@ -334,6 +334,8 @@ export class StockService {
     try {
       let totalCalculado = 0;
 
+      const productosEnPedidosPendientes = await this.getProductosEnPedidosPendientesById(dto.productos.map(p => p.id_producto));
+
       // Calcular total con precios reales
       for (const p of dto.productos) {
         const producto = await queryRunner.manager.findOne(Product, {
@@ -373,6 +375,14 @@ export class StockService {
           where: { producto: { id: producto.id_producto } },
           relations: ['producto'],
         });
+        //comparar productosEnPedidosPendientes con stock si la cantidad de producto.cantidad + dto.producto.cantidad es mayor a stock.cantidad_disponible
+        const productoPendiente = productosEnPedidosPendientes.find(p => p.id_producto === producto.id_producto);
+        const productoDtoCantidad = dto.productos.find(p => p.id_producto === producto.id_producto)?.cantidad || 0;
+        if (productoPendiente && (productoPendiente.cantidad_total + productoDtoCantidad) > stock.cantidad_disponible) {
+          const faltante = (productoPendiente.cantidad_total + productoDtoCantidad) - stock.cantidad_disponible;
+          throw new Error(`El producto ${stock.producto.nombre} tiene ${productoPendiente.cantidad_total} pedidos pendientes y el stock actual es ${stock.cantidad_disponible}, faltan ${faltante} más en stock para completar el pedido`);
+        }
+
 
         if (!stock) {
           throw new Error(`No hay stock para el producto ID ${producto.id_producto}`);
@@ -716,6 +726,8 @@ export class StockService {
         ep.pedido.detalles.forEach(det => productoIds.add(det.producto.id));
       });
 
+      const productosEnPedidosPendientes = await this.getProductosEnPedidosPendientesById([...productoIds]);
+      console.log('Productos en pedidos pendientes:', productosEnPedidosPendientes);
       const stocks = await queryRunner.manager
         .getRepository(Stock)
         .createQueryBuilder("stock")
@@ -750,6 +762,15 @@ export class StockService {
           const stock = stockMap.get(detalle.producto.id);
 
           if (dto.estado === 'entregado') {
+
+            //comparar productosEnPedidosPendientes con stock si la cantidad de producto.cantidad + dto.producto.cantidad es mayor a stock.cantidad_disponible
+            const productoPendiente = productosEnPedidosPendientes.find(p => p.id_producto === detalle.producto.id);
+
+            if (productoPendiente && productoPendiente.cantidad_total > stock.cantidad_disponible) {
+              const faltante = productoPendiente.cantidad_total - stock.cantidad_disponible;
+              throw new Error(`El producto ${stock.producto.nombre} tiene ${productoPendiente.cantidad_total} pedidos pendientes y el stock actual es ${stock.cantidad_disponible}, faltan ${faltante} más en stock para completar el pedido`);
+            }
+
 
             await this.restarStockProducto(queryRunner, detalle.producto.id, detalle.cantidad, detalle.producto.nombre);
 
@@ -856,7 +877,7 @@ export class StockService {
       .select('dp.idProducto', 'id_producto')
       .addSelect('SUM(dp.cantidad)', 'cantidad_total')
       .innerJoin('dp.pedido', 'p')
-      .where('p.estado IN (:...estados)', { estados: ['pendiente', 'en_envio'] })
+      .where('p.estado IN (:...estados)', { estados: ['pendiente', 'envio_creado'] })
       .andWhere('dp.idProducto IN (:...ids)', { ids: productos })
       .groupBy('dp.idProducto')
       .getRawMany();
