@@ -590,7 +590,7 @@ export class StockService {
       .orderBy('header.fechaCreacion', 'DESC')
       .addOrderBy('producto.id_categoria', 'ASC')
       .addOrderBy('producto.nombre', 'ASC')
-      .take(50)
+      .take(250)
       .getMany();
 
     return headers;
