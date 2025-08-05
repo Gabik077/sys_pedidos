@@ -17,13 +17,13 @@ async function bootstrap() {
     credentials: true,
   });
 
-  if (process.env.NODE_ENV !== 'production') {
-    app.useGlobalPipes(new ValidationPipe({
-      // whitelist: true,
-      //   forbidNonWhitelisted: true,
-      transform: true,
-    }));
-  }
+
+  app.useGlobalPipes(new ValidationPipe({
+    // whitelist: true,
+    //   forbidNonWhitelisted: true,
+    transform: true,
+  }));
+
 
   app.setGlobalPrefix('api');
 
