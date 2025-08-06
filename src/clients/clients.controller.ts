@@ -36,8 +36,8 @@ export class ClientsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
-  @Get('ciudades')
-  getCiudades() {
+  @Get('/ciudades')
+  async getCiudades() {
     return this.clientsService.getCiudades();
   }
 

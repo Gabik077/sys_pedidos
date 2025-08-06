@@ -17,7 +17,18 @@ export class ClientsService {
 
 
   async getCiudades(): Promise<Ciudad[]> {
-    return await this.ciudadRepository.find();
+    const ciudades = await this.ciudadRepository.find({
+      select: {
+        id: true,
+        nombre: true,
+      },
+    });
+
+    if (!ciudades || ciudades.length === 0) {
+      return [];
+    }
+
+    return ciudades;
   }
 
   async updateClient(
