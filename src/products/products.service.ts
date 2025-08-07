@@ -170,6 +170,7 @@ export class ProductsService {
         nombre: true,
         descripcion: true,
         precio_venta: true,
+        codigo_barra: true,
       },
     });
 

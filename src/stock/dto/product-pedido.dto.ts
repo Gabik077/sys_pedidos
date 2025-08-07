@@ -4,4 +4,5 @@ interface ProductoPendienteDto {
     cantidad_total: number;
     estado?: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado';
     pedido_id?: number;
+    is_combo?: boolean;
 }
