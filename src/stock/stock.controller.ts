@@ -140,16 +140,11 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador, Role.SysAdmin)
-  @Post()
-  async create(@Body() createStockDto: CreateStockDto) {
-    return this.stockService.create(createStockDto);
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Comprador, Role.SysAdmin)
   @Get()
-  async findAll() {
-    return this.stockService.findAll();
+  async findAll(
+    @User('id_empresa') idEmpresa: number,
+  ) {
+    return this.stockService.findAll(idEmpresa);
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)

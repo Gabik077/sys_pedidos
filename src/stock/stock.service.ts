@@ -550,11 +550,7 @@ export class StockService {
 
 
 
-  create(createStockDto: CreateStockDto) {
-    return 'This action adds a new stock';
-  }
-
-  findAll() {
+  findAll(empresaId?: number): Promise<Stock[]> {
 
     const stock = this.stockRepository.find({
       relations: { producto: true },
@@ -583,6 +579,9 @@ export class StockService {
           },
         },
 
+      },
+      where: {
+        id_empresa: empresaId ? { id: empresaId } : null,
       }
     }
     );
