@@ -278,6 +278,10 @@ export class StockService {
           lock: { mode: 'pessimistic_write' }
         });
 
+        if (!stock) {
+          throw new Error(`No hay stock para el producto ID ${producto.id_producto}`);
+        }
+
 
         stock.cantidad_disponible -= producto.cantidad;
         stock.fecha_actualizacion = new Date();
@@ -299,7 +303,7 @@ export class StockService {
 
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw error;
+      return { status: 'error', message: `Error stock: ${error.message}` };
     } finally {
       await queryRunner.release();
     }
