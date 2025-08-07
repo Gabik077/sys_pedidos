@@ -33,20 +33,24 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador, Role.Vendedor, Role.SysAdmin)
   @Get('proveedores')
-  getProveedores() {
-    return this.productsService.getProveedores();
+  getProveedores(
+    @User('id_empresa') idEmpresa: number,
+  ) {
+    return this.productsService.getProveedores(idEmpresa);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Comprador, Role.Vendedor, Role.SysAdmin)
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(
+    @User('id_empresa') idEmpresa: number,
+  ) {
+    return this.productsService.findAll(idEmpresa);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+  findOne(@Param('id') id: string, @User('id_empresa') idEmpresa: number) {
+    return this.productsService.findOne(+id, idEmpresa);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -59,8 +63,8 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.SysAdmin)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  remove(@Param('id') id: string, @User('id_empresa') idEmpresa: number) {
+    return this.productsService.remove(+id, idEmpresa);
   }
 
 

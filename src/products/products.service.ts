@@ -137,12 +137,15 @@ export class ProductsService {
     }
   }
 
-  async getProveedores(): Promise<Proveedor[]> {
+  async getProveedores(empresaId: number): Promise<Proveedor[]> {
 
     const proveedores = await this.proveedoresRepository.find({
       select: {
         id: true,
         nombre: true,
+      },
+      where: {
+        id_empresa: empresaId,
       },
     });
 
@@ -165,10 +168,10 @@ export class ProductsService {
 
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(empresaId: number): Promise<Product[]> {
 
     const product = await this.productRepository.find({
-      where: { estado: "activo" },
+      where: { estado: "activo", id_empresa: empresaId },
       select: {
         id: true,
         nombre: true,
@@ -183,10 +186,10 @@ export class ProductsService {
 
 
 
-  async findOne(id: number): Promise<Product> {
+  async findOne(id: number, empresaId: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       relations: ['unidad', 'proveedor'],
-      where: { id },
+      where: { id, id_empresa: empresaId },
       select: {
         id: true,
         nombre: true,
@@ -223,16 +226,15 @@ export class ProductsService {
 
 
   async update(id: number, updateProductDto: UpdateProductDto, id_empresa: number) {
-    const product = await this.productRepository.findOne({ where: { id } });
+    const product = await this.productRepository.findOne({ where: { id, id_empresa } });
     if (!product) {
       return { status: "error", message: "Producto no encontrado" };
     }
     try {
       await this.productRepository.update(id, {
         ...updateProductDto,
-        unidad: { id: updateProductDto.unidad }, // <-- importante
-        proveedor: { id: updateProductDto.id_proveedor }, // <-- importante
-        id_empresa: id_empresa, // Mantener la empresa si no se proporciona
+        unidad: { id: updateProductDto.unidad },
+        proveedor: { id: updateProductDto.id_proveedor }
       });
 
     } catch (error) {
@@ -245,8 +247,8 @@ export class ProductsService {
 
   }
 
-  async remove(id: number) {
-    const user = await this.productRepository.delete(id);
+  async remove(id: number, empresaId: number) {
+    const user = await this.productRepository.delete({ id, id_empresa: empresaId });
 
     if (user.affected === 0) {
       return { status: "error", message: "no se pudo borrar el producto" };
