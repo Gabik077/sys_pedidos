@@ -255,18 +255,30 @@ export class StockService {
         observaciones: dto.observaciones
       });
 
+
+      //obtener el total de la venta de la tabla productos
+      const totalVenta = await this.productRepository.createQueryBuilder('productos')
+        .select('SUM(productos.precio_venta)', 'total')
+        .where('productos.id IN (:...ids)', { ids: dto.productos.map(p => p.id_producto) })
+        .getRawOne();
+
+      if (!totalVenta) {
+        throw new Error('No se pudo calcular el total de la venta');
+      }
+
       const salidaStockGeneral = await queryRunner.manager.save(salidaGeneral); // 2-inserta en tabla salida_general
+
 
       if (dto.venta) { //si es venta a un cliente
         const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
           id_cliente: dto.venta.id_cliente || null, // puede ser null si no es venta a cliente
-          total_venta: dto.total_venta,
+          total_venta: totalVenta.total, // se calcula en el backend
           estado: 'completada',
           metodo_pago: dto.venta.metodo_pago || 'efectivo', // por defecto efectivo
           id_empresa: { id: idEmpresa },
           id_usuario: { id: idUsuario },
           salida_stock_general: salidaStockGeneral, // No se usa en ventas
-          iva: parseFloat((dto.total_venta / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
+          iva: parseFloat((totalVenta.total / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
         });
         const savedVenta = await queryRunner.manager.save(venta);
         dto.id_origen = savedVenta.id;
