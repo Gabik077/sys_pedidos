@@ -381,6 +381,7 @@ export class StockService {
       pedido.responsable = dto.pedido.chofer;
       pedido.empresa = idEmpresa;
       pedido.id_usuario = idUsuario;
+      pedido.fechaPedido = new Date();
       pedido.vendedorId = dto.vendedorId || 1; // default vendedor ID 1
       pedido.vendedorNombre = vendedor ? `${vendedor.nombre} ${vendedor.apellido}` : 'No asignado'; // Nombre del vendedor
 
