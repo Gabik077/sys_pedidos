@@ -650,6 +650,7 @@ export class StockService {
         finRutaLon: dto.destinoLon ? parseFloat(dto.destinoLon.toString()) : 0.0, // Puede ser 0 si no se calcula
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
         idUsuario: idUsuario,
+        fechaCreacion: new Date(),
         kmCalculado: dto.kmCalculado || null, // Puede ser null si no se calcula
         tiempoCalculado: dto.tiempoCalculado || null, // Puede ser null si
       });
