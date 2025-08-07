@@ -37,29 +37,41 @@ export class ClientsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('/ciudades')
-  async getCiudades() {
-    return this.clientsService.getCiudades();
+  async getCiudades(
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number,
+  ) {
+    return this.clientsService.getCiudades(idEmpresa, idUsuario);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get(':id')
-  async getClienteById(@Param('id') id: string) {
-    return this.clientsService.getClienteById(+id);
+  async getClienteById(
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number,
+    @Param('id') id: string) {
+    return this.clientsService.getClienteById(+id, idEmpresa, idUsuario);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get()
-  async getClientes() {
-    return this.clientsService.getClientes();
+  async getClientes(
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number,
+  ) {
+    return this.clientsService.getClientes(idEmpresa, idUsuario);
   }
 
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.SysAdmin)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.clientsService.remove(id);
+  remove(
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number,
+    @Param('id', ParseIntPipe) id: number) {
+    return this.clientsService.remove(id, idEmpresa, idUsuario);
   }
 }

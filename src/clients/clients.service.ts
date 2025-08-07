@@ -16,7 +16,7 @@ export class ClientsService {
   ) { }
 
 
-  async getCiudades(): Promise<Ciudad[]> {
+  async getCiudades(idEmpresa: number, idUsuario: number): Promise<Ciudad[]> {
     const ciudades = await this.ciudadRepository.find({
       select: {
         id: true,
@@ -41,7 +41,7 @@ export class ClientsService {
     try {
 
       const client = await this.clientRepository.findOne({
-        where: { id },
+        where: { id, id_empresa: { id: idEmpresa }, id_usuario: { id: idUsuario } },
       });
       if (!client) {
         return { status: 'error', message: 'Cliente no encontrado' };
@@ -110,9 +110,9 @@ export class ClientsService {
 
   }
 
-  async getClienteById(id: number): Promise<Cliente | null> {
+  async getClienteById(id: number, idEmpresa: number, idUsuario: number): Promise<Cliente | null> {
     return this.clientRepository.findOne({
-      where: { id },
+      where: { id, id_empresa: { id: idEmpresa }, id_usuario: { id: idUsuario } },
       select: {
         id: true,
         nombre: true,
@@ -128,7 +128,7 @@ export class ClientsService {
     });
   }
 
-  async getClientes(): Promise<Cliente[]> {
+  async getClientes(idEmpresa: number, idUsuario: number): Promise<Cliente[]> {
     return this.clientRepository.find({
       select: {
         id: true,
@@ -141,13 +141,17 @@ export class ClientsService {
         direccion: true,
         ciudad: true,
       },
+      where: {
+        id_empresa: { id: idEmpresa },
+        id_usuario: { id: idUsuario },
+      },
     });
   }
 
 
 
-  remove(id: number) {
-    return this.clientRepository.delete(id).then((result) => {
+  remove(id: number, idEmpresa: number, idUsuario: number): Promise<{ status: string; message: string }> {
+    return this.clientRepository.delete({ id, id_empresa: { id: idEmpresa }, id_usuario: { id: idUsuario } }).then((result) => {
       if (result.affected === 0) {
         return { status: 'error', message: 'Cliente no encontrado' };
       }
