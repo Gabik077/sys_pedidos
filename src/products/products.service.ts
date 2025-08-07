@@ -38,14 +38,18 @@ export class ProductsService {
     try {
       // 1. Validar código interno único
       const existingProduct = await queryRunner.manager.findOne(Product, {
-        where: { codigo_interno: createProductDto.codigo_interno, id_empresa },
+        where: [
+          { codigo_barra: createProductDto.codigo_barra, id_empresa },
+          { codigo_interno: createProductDto.codigo_interno, id_empresa }
+        ],
         select: { id: true },
       });
+
 
       if (existingProduct) {
         return {
           status: "error",
-          message: "Ya existe un producto con el mismo código interno",
+          message: "Ya existe un producto con el mismo código interno o código de barras",
         };
       }
 
