@@ -41,7 +41,7 @@ export class ClientsService {
     try {
 
       const client = await this.clientRepository.findOne({
-        where: { id, id_empresa: { id: idEmpresa }, id_usuario: { id: idUsuario } },
+        where: { id, id_empresa: { id: idEmpresa } },
       });
       if (!client) {
         return { status: 'error', message: 'Cliente no encontrado' };
@@ -112,7 +112,7 @@ export class ClientsService {
 
   async getClienteById(id: number, idEmpresa: number, idUsuario: number): Promise<Cliente | null> {
     return this.clientRepository.findOne({
-      where: { id, id_empresa: { id: idEmpresa }, id_usuario: { id: idUsuario } },
+      where: { id, id_empresa: { id: idEmpresa } },
       select: {
         id: true,
         nombre: true,
@@ -129,7 +129,8 @@ export class ClientsService {
   }
 
   async getClientes(idEmpresa: number, idUsuario: number): Promise<Cliente[]> {
-    return this.clientRepository.find({
+
+    const clients = await this.clientRepository.find({
       select: {
         id: true,
         nombre: true,
@@ -142,10 +143,11 @@ export class ClientsService {
         ciudad: true,
       },
       where: {
-        id_empresa: { id: idEmpresa },
-        id_usuario: { id: idUsuario },
+        id_empresa: { id: idEmpresa }
       },
     });
+
+    return clients;
   }
 
 
