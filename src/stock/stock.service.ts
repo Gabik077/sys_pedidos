@@ -46,6 +46,8 @@ export class StockService {
     private comboRepository: Repository<ComboHeader>,
     @InjectRepository(Vendedor)
     private vendedorRepository: Repository<Vendedor>,
+    @InjectRepository(EnvioPedido)
+    private envioPedidoRepo: Repository<EnvioPedido>,
   ) { }
 
   async getMoviles(): Promise<MovilPedido[]> {
@@ -651,6 +653,105 @@ export class StockService {
       .getMany();
 
     return headers;
+  }
+
+  async editarEnvio(dto: CreateEnvioDto, idEnvio: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const { pedidos, idMovil } = dto;
+
+      if (!pedidos || pedidos.length === 0) {
+        return { status: 'error', message: 'No se han seleccionado pedidos para el envío' };
+      }
+
+      if (!idMovil || idMovil <= 0) {
+        return { status: 'error', message: 'Debe seleccionar un móvil válido para el envío' };
+      }
+
+      const envioHeader = await queryRunner.manager.findOne(EnviosHeader, {
+        where: { id: idEnvio },
+        relations: ['envioPedido', 'envioPedido.pedido'],
+      });
+
+      if (!envioHeader) {
+        return { status: 'error', message: `Envío con ID ${idEnvio} no encontrado` };
+      }
+
+      const pedidosExistentes = envioHeader.envioPedido.map(ep => ep.pedido.id);
+      const pedidosNuevos = pedidos.filter(id => !pedidosExistentes.includes(id));
+      const pedidosAEliminar = pedidosExistentes.filter(id => !pedidos.includes(id));
+
+      // 1. Crear detalles nuevos
+      const nuevosDetalles = pedidosNuevos.map((idPedido) =>
+        this.detalleRepo.create({
+          idPedido,
+          idMovil,
+          fechaCreacion: new Date(),
+          ordenEnvio: pedidos.indexOf(idPedido) + 1,
+          envioHeader,
+        })
+      );
+      if (nuevosDetalles.length > 0) {
+        await queryRunner.manager.save(nuevosDetalles);
+      }
+      // 1.1 Actualizar estado de pedidos nuevos a 'envio_creado'
+      await queryRunner.manager.update(
+        Pedido,
+        { id: In(pedidosNuevos) },
+        { estado: 'envio_creado' }
+      );
+
+
+      // 2. 🔁 Actualizar orden de TODOS los pedidos del array dto.pedidos (sean nuevos o existentes)
+      const detallesAActualizar: EnvioPedido[] = [];
+
+      for (let index = 0; index < pedidos.length; index++) {
+        const idPedido = pedidos[index];
+
+        const envioPedidoExistente = envioHeader.envioPedido.find(
+          ep => ep.pedido.id === idPedido
+        );
+
+        if (envioPedidoExistente && envioPedidoExistente.ordenEnvio !== index + 1) {
+          envioPedidoExistente.ordenEnvio = index + 1;
+          detallesAActualizar.push(envioPedidoExistente);
+        }
+
+      }
+
+      if (detallesAActualizar.length > 0) {
+        await queryRunner.manager.save(detallesAActualizar);
+      }
+
+      // 3. Restaurar estado de pedidos eliminados
+      if (pedidosAEliminar.length > 0) {
+        await queryRunner.manager.update(
+          Pedido,
+          { id: In(pedidosAEliminar), estado: 'envio_creado' },
+          { estado: 'pendiente' }
+        );
+
+        await queryRunner.manager.delete(EnvioPedido, {
+          envioHeader: { id: idEnvio },
+          pedido: { id: In(pedidosAEliminar) },
+        });
+      }
+
+      // ✅ Commit
+      await queryRunner.commitTransaction();
+      return { status: 'ok', message: 'Envío editado con éxito' };
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Error al editar el envío:', error);
+      return { status: 'error', message: 'Error al editar el envío' };
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async crearEnvio(dto: CreateEnvioDto, idEmpresa: number, idUsuario: number) {

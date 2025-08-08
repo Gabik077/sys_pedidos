@@ -100,6 +100,13 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Post('editarEnvio/:id')
+  async editarEnvio(@Body() dto: CreateEnvioDto, @Param('id') idEnvio: number) {
+    return this.stockService.editarEnvio(dto, idEnvio);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('guardarEstadoPedido')
   async guardarEstadoPedido(
     @Body() dto: EstadoEnvioDto,
