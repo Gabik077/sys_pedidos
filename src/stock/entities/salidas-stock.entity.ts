@@ -8,7 +8,7 @@ export class SalidaStock {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => SalidaStockGeneral, salidaGeneral => salidaGeneral.salidas, { onDelete: 'CASCADE' })
+    @ManyToOne(() => SalidaStockGeneral, salidaGeneral => salidaGeneral.salidas)
     @JoinColumn({ name: 'id_salida_general' })
     salida_general: SalidaStockGeneral;
 

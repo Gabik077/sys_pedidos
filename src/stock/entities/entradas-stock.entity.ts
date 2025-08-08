@@ -8,7 +8,7 @@ export class EntradaStock {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => EntradaStockGeneral, entradaGeneral => entradaGeneral.entradas, { onDelete: 'CASCADE' })
+    @ManyToOne(() => EntradaStockGeneral, entradaGeneral => entradaGeneral.entradas)
     @JoinColumn({ name: 'id_entrada_general' })
     entrada_general: EntradaStockGeneral;
 

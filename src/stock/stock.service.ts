@@ -593,7 +593,14 @@ export class StockService {
   }
 
   async getEnviosById(estadoEnvio: string, envioId: number): Promise<EnviosHeader[]> {
-    console.log('getEnviosById', estadoEnvio, envioId);
+
+    const envioHeader = await this.headerRepo.findOne({
+      where: { id: envioId, estado: estadoEnvio },
+    });
+
+    if (!envioHeader) {
+      return [];
+    }
     const headers = await this.headerRepo
       .createQueryBuilder('header')
       .leftJoinAndSelect('header.envioPedido', 'envioPedido')
@@ -615,7 +622,6 @@ export class StockService {
       .leftJoinAndSelect('comboDetalles.producto', 'comboDetalleProducto')
 
       .where('header.id = :id', { id: envioId })
-
       .orderBy('header.fechaCreacion', 'DESC')
       .addOrderBy('producto.id_categoria', 'ASC')
       .addOrderBy('producto.nombre', 'ASC')
@@ -673,7 +679,7 @@ export class StockService {
       }
 
       const envioHeader = await queryRunner.manager.findOne(EnviosHeader, {
-        where: { id: idEnvio },
+        where: { id: idEnvio, estado: 'pendiente' },
         relations: ['envioPedido', 'envioPedido.pedido'],
       });
 
