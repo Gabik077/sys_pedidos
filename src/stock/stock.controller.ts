@@ -83,6 +83,13 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Get('getEnvioById')
+  async getEnviosById(@Query('estadoEnvio') estadoEnvio: string, @Query('envioId') envioId: number) {
+    return this.stockService.getEnviosById(estadoEnvio, envioId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('envio')
   async crearEnvio(@Body() dto: CreateEnvioDto,
     @User('id_empresa') idEmpresa: number,

@@ -590,6 +590,37 @@ export class StockService {
     return stock;
   }
 
+  async getEnviosById(estadoEnvio: string, envioId: number): Promise<EnviosHeader[]> {
+    console.log('getEnviosById', estadoEnvio, envioId);
+    const headers = await this.headerRepo
+      .createQueryBuilder('header')
+      .leftJoinAndSelect('header.envioPedido', 'envioPedido')
+      .leftJoinAndSelect('envioPedido.movil', 'movil')
+      .leftJoinAndSelect('envioPedido.pedido', 'pedido')
+      .leftJoinAndSelect('pedido.cliente', 'cliente')
+      .leftJoinAndSelect('pedido.detalles', 'detalle')
+      .leftJoinAndSelect('detalle.producto', 'producto')
+
+      // Si el producto es combo, obtener comboHeader
+      .leftJoinAndMapOne(
+        'producto.comboHeader',
+        'combo_header',
+        'combo',
+        'combo.productoCombo.id = producto.id'
+      )
+      // Obtener detalles del combo y los productos
+      .leftJoinAndSelect('combo.detalles', 'comboDetalles')
+      .leftJoinAndSelect('comboDetalles.producto', 'comboDetalleProducto')
+
+      .where('header.id = :id', { id: envioId })
+
+      .orderBy('header.fechaCreacion', 'DESC')
+      .addOrderBy('producto.id_categoria', 'ASC')
+      .addOrderBy('producto.nombre', 'ASC')
+      .getMany();
+
+    return headers;
+  }
 
   async getEnviosPorEstado(estadoEnvio: string): Promise<EnviosHeader[]> {
     const headers = await this.headerRepo
