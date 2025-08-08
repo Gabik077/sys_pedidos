@@ -19,11 +19,11 @@ import { EnvioPedido } from './entities/envio-pedido.entity';
 import { EnviosHeader } from './entities/envios-header.entity';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { EstadoEnvioDto } from './dto/estado-envio.dto';
-import { env } from 'process';
 import { CreateMovilDto } from './dto/create-movil.dto';
 import { ComboHeader } from 'src/products/entities/combo-header.entity';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { Vendedor } from 'src/vendedores/entities/vendedor.entity';
+import { ProductoPendienteDto } from './dto/product-pedido.dto';
 
 
 @Injectable()
