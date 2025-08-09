@@ -3,7 +3,6 @@ import { CreateStockDto } from './dto/create-stock.dto';
 import { Compra } from './entities/compras.entity';
 import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
 import { EntradaStock } from './entities/entradas-stock.entity';
-import { Product } from 'src/products/entities/product.entity';
 import { DataSource, Repository, In, QueryRunner, Code } from 'typeorm';
 import { Stock } from './entities/stock.entity.dto';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
@@ -20,10 +19,11 @@ import { EnviosHeader } from './entities/envios-header.entity';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { EstadoEnvioDto } from './dto/estado-envio.dto';
 import { CreateMovilDto } from './dto/create-movil.dto';
-import { ComboHeader } from 'src/products/entities/combo-header.entity';
+import { ComboHeader } from '../products/entities/combo-header.entity';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
-import { Vendedor } from 'src/vendedores/entities/vendedor.entity';
+import { Vendedor } from '../vendedores/entities/vendedor.entity';
 import { ProductoPendienteDto } from './dto/product-pedido.dto';
+import { Product } from '../products/entities/product.entity';
 
 
 @Injectable()

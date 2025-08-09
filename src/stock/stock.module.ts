@@ -6,7 +6,7 @@ import { Product } from '../products/entities/product.entity';
 import { Compra } from './entities/compras.entity';
 import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
 import { EntradaStock } from './entities/entradas-stock.entity';
-import { Empresa } from 'src/users/entities/empresa.entity';
+import { Empresa } from '../users/entities/empresa.entity';
 import { Stock } from './entities/stock.entity.dto';
 import { Venta } from './entities/ventas.entity';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
@@ -18,9 +18,9 @@ import { Pedido } from './entities/pedido.entity';
 import { DetallePedido } from './entities/detalle-pedido.entity';
 import { EnvioPedido } from './entities/envio-pedido.entity';
 import { EnviosHeader } from './entities/envios-header.entity';
-import { ComboHeader } from 'src/products/entities/combo-header.entity';
-import { ComboDetalle } from 'src/products/entities/combo-detalle.entity';
-import { Vendedor } from 'src/vendedores/entities/vendedor.entity';
+import { ComboHeader } from '../products/entities/combo-header.entity';
+import { ComboDetalle } from '../products/entities/combo-detalle.entity';
+import { Vendedor } from '../vendedores/entities/vendedor.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(

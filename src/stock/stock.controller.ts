@@ -1,17 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { StockService } from './stock.service';
 import { CreateStockDto } from './dto/create-stock.dto';
-import { UpdateStockDto } from './dto/update-stock.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { Roles } from 'src/auth/roles.decorator';
-import { Role } from 'src/auth/roles.enum';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/roles.enum';
+import { RolesGuard } from '../auth/roles.guard';
 import { StockVentaDto } from './dto/stock-venta.dto';
 import { CrearPedidoDto } from './dto/create-pedido.dto';
 import { CreateEnvioDto } from './dto/create-envio.dto';
 import { EstadoEnvioDto } from './dto/estado-envio.dto';
-import { User } from 'src/users/user.decorator';
-import { MovilPedido } from './entities/movil-pedido.entity';
+import { User } from '../users/user.decorator';
 import { CreateMovilDto } from './dto/create-movil.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 

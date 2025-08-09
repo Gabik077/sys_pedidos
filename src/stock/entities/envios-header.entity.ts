@@ -1,5 +1,4 @@
-import { Empresa } from 'src/users/entities/empresa.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Empresa } from '../../users/entities/empresa.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { EnvioPedido } from './envio-pedido.entity';
 

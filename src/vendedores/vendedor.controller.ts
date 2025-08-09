@@ -2,11 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { VendedorService } from './vendedor.service';
 import { CreateVendedorDto } from './dto/create-vendedor.dto';
 import { UpdateVendedorDto } from './dto/update-vendedor.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { Roles } from 'src/auth/roles.decorator';
-import { Role } from 'src/auth/roles.enum';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { User } from 'src/users/user.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/roles.enum';
+import { RolesGuard } from '../auth/roles.guard';
+import { User } from '../users/user.decorator';
 
 @Controller('vendedor')
 export class VendedorController {
