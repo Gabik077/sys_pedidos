@@ -319,7 +319,7 @@ export class StockService {
 
         const salida = queryRunner.manager.create(SalidaStock, {// 3-inserta en tabla salidas_stock (detalle de salida)
           salida_general: salidaGeneral,
-          id_producto: { id: producto.id_producto },
+          producto: { id: producto.id_producto },
           cantidad: producto.cantidad,
           id_usuario: { id: idUsuario }
         });
@@ -960,7 +960,7 @@ export class StockService {
             const salidaDetalle = queryRunner.manager.create(SalidaStock, {
               salida_general: savedSalidaGeneral,
               id_pedido: pedido.id,
-              id_producto: { id: detalle.producto.id },
+              producto: { id: detalle.producto.id },
               cantidad: detalle.cantidad,
               id_usuario: { id: idUsuario }
             });
