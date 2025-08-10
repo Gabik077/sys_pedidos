@@ -3,7 +3,7 @@ import { CreateStockDto } from './dto/create-stock.dto';
 import { Compra } from './entities/compras.entity';
 import { EntradaStockGeneral } from './entities/entrada-stock-general.entity';
 import { EntradaStock } from './entities/entradas-stock.entity';
-import { DataSource, Repository, In, QueryRunner, Code } from 'typeorm';
+import { DataSource, Repository, In, QueryRunner, Code, LessThanOrEqual, Equal } from 'typeorm';
 import { Stock } from './entities/stock.entity.dto';
 import { SalidaStockGeneral } from './entities/salida-stock-general.entity';
 import { SalidaStock } from './entities/salidas-stock.entity';
@@ -24,7 +24,7 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { Vendedor } from '../vendedores/entities/vendedor.entity';
 import { ProductoPendienteDto } from './dto/product-pedido.dto';
 import { Product } from '../products/entities/product.entity';
-
+import { Between } from 'typeorm';
 
 @Injectable()
 export class StockService {
@@ -123,19 +123,31 @@ export class StockService {
     }
   }
 
-  async getVentas(
-    idEmpresa: number
-  ): Promise<Venta[]> {
+
+  async getVentas(idEmpresa: number): Promise<Venta[]> {
+    // Fecha de hoy a las 00:00:00
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    // Fecha de hoy a las 23:59:59
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
     return this.dataSource.getRepository(Venta).find({
       where: {
-        id_empresa: { id: idEmpresa }
+        id_empresa: { id: idEmpresa },
+        fecha_venta: Between(startOfDay, endOfDay)
       },
-      relations: ['salida_stock_general', 'salida_stock_general.salidas', 'salida_stock_general.salidas.producto'],
+      relations: [
+        'salida_stock_general',
+        'salida_stock_general.salidas',
+        'salida_stock_general.salidas.producto'
+      ],
       order: {
-        fecha_venta: 'DESC',
+        id: 'DESC'
       },
+      take: 100
     });
-
   }
 
   async updateEstadoPedido(idPedido: number, estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
@@ -187,6 +199,7 @@ export class StockService {
         id_usuario: { id: idUsuario },
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
         estado: 'aprobado',
+        fecha: new Date(),
         observaciones: dto.observaciones
       });
       const savedEntradaGeneral = await queryRunner.manager.save(entradaGeneral);
@@ -197,6 +210,7 @@ export class StockService {
           id_proveedor: { id: dto.compra.id_proveedor },
           id_usuario: { id: idUsuario },
           id_empresa: idEmpresa ? { id: idEmpresa } : null,
+          fecha_compra: new Date(),
           total_compra: dto.compra.total_compra,
           id_entrada_stock_general: savedEntradaGeneral.id,
           estado: dto.compra.estado || 'aprobado'
@@ -210,6 +224,7 @@ export class StockService {
         const entrada = queryRunner.manager.create(EntradaStock, {// 3-inserta en tabla entradas_stock
           entrada_general: savedEntradaGeneral,
           id_producto: { id: producto.id_producto } as Product,
+          fecha_entrada: new Date(),
           cantidad: producto.cantidad,
           id_usuario: { id: idUsuario },
         });
@@ -227,6 +242,7 @@ export class StockService {
           stock = queryRunner.manager.create(Stock, { // 5- inserta en tabla stock (actualiza cantidad)
             producto: { id: producto.id_producto },
             cantidad_disponible: producto.cantidad,
+            fecha_actualizacion: new Date(),
             id_usuario: { id: idUsuario },
             id_empresa: idEmpresa ? { id: idEmpresa } : null,
             id_categoria_stock: dto.categoria_stock.id || 1,
@@ -267,6 +283,7 @@ export class StockService {
       const salidaGeneral = queryRunner.manager.create(SalidaStockGeneral, {
         tipo_origen: dto.tipo_origen,
         id_usuario: { id: idUsuario },
+        fecha: new Date(),
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
         id_cliente: dto.venta ? dto.venta.id_cliente : null, // puede ser null si no es venta a cliente
         observaciones: dto.observaciones
@@ -293,6 +310,7 @@ export class StockService {
           estado: 'completada',
           metodo_pago: dto.venta.metodo_pago || 'efectivo', // por defecto efectivo
           id_empresa: { id: idEmpresa },
+          fecha_venta: new Date(),
           id_usuario: { id: idUsuario },
           salida_stock_general: salidaStockGeneral, // No se usa en ventas
           iva: parseFloat((totalVenta.total / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
@@ -320,6 +338,7 @@ export class StockService {
         const salida = queryRunner.manager.create(SalidaStock, {// 3-inserta en tabla salidas_stock (detalle de salida)
           salida_general: salidaGeneral,
           producto: { id: producto.id_producto },
+          fecha_salida: new Date(),
           cantidad: producto.cantidad,
           id_usuario: { id: idUsuario }
         });
