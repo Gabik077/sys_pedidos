@@ -55,6 +55,14 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Get('ventas')
+  async getVentas(@User('id_empresa') idEmpresa: number) {
+    return this.stockService.getVentas(idEmpresa);
+  }
+
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('updateEstadoPedido/:idPedido')
   async updateEstadoPedido(@Param('idPedido') idPedido: number, @Body('estado') estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
     return this.stockService.updateEstadoPedido(idPedido, estado);

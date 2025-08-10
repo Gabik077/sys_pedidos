@@ -15,7 +15,7 @@ export class SalidaStock {
 
     @ManyToOne(() => Product)
     @JoinColumn({ name: 'id_producto' })
-    id_producto: Product;
+    producto: Product;
 
     @Column()
     cantidad: number;

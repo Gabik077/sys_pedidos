@@ -123,6 +123,21 @@ export class StockService {
     }
   }
 
+  async getVentas(
+    idEmpresa: number
+  ): Promise<Venta[]> {
+    return this.dataSource.getRepository(Venta).find({
+      where: {
+        id_empresa: { id: idEmpresa }
+      },
+      relations: ['salida_stock_general', 'salida_stock_general.salidas', 'salida_stock_general.salidas.producto'],
+      order: {
+        fecha_venta: 'DESC',
+      },
+    });
+
+  }
+
   async updateEstadoPedido(idPedido: number, estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
 
     const queryRunner = this.dataSource.createQueryRunner();
