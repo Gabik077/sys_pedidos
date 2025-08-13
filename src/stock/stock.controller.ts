@@ -56,8 +56,8 @@ export class StockController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('ventas')
-  async getVentas(@User('id_empresa') idEmpresa: number) {
-    return this.stockService.getVentas(idEmpresa);
+  async getVentas(@User('id_empresa') idEmpresa: number, @Query('fecha') fecha: string) {
+    return this.stockService.getVentas(idEmpresa, fecha);
   }
 
 

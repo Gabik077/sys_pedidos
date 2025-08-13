@@ -124,19 +124,20 @@ export class StockService {
   }
 
 
-  async getVentas(idEmpresa: number): Promise<Venta[]> {
+  async getVentas(idEmpresa: number, fecha: string): Promise<Venta[]> {
     // Fecha de hoy a las 00:00:00
-    const startOfDay = new Date();
+    const startOfDay = new Date(fecha);
     startOfDay.setHours(0, 0, 0, 0);
 
     // Fecha de hoy a las 23:59:59
-    const endOfDay = new Date();
+    const endOfDay = new Date(fecha);
     endOfDay.setHours(23, 59, 59, 999);
+    console.log("Fechas:", startOfDay, endOfDay);
 
     return this.dataSource.getRepository(Venta).find({
       where: {
         id_empresa: { id: idEmpresa },
-        fecha_venta: Between(startOfDay, endOfDay)
+        fecha_venta: Between(startOfDay, endOfDay),
       },
       relations: [
         'salida_stock_general',
