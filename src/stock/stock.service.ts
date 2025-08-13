@@ -132,7 +132,6 @@ export class StockService {
     // Fecha de hoy a las 23:59:59
     const endOfDay = new Date(fecha);
     endOfDay.setHours(23, 59, 59, 999);
-    console.log("Fechas:", startOfDay, endOfDay);
 
     return this.dataSource.getRepository(Venta).find({
       where: {
@@ -142,7 +141,8 @@ export class StockService {
       relations: [
         'salida_stock_general',
         'salida_stock_general.salidas',
-        'salida_stock_general.salidas.producto'
+        'salida_stock_general.salidas.producto',
+        'cliente',
       ],
       order: {
         id: 'DESC'

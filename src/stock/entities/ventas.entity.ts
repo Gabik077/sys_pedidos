@@ -3,6 +3,7 @@ import { Empresa } from '../../users/entities/empresa.entity';
 import { User } from '../../users/entities/user.entity';
 import { join } from 'path';
 import { SalidaStockGeneral } from './salida-stock-general.entity';
+import { Cliente } from 'src/clients/entities/cliente.entity';
 @Entity('ventas')
 export class Venta {
     @PrimaryGeneratedColumn()
@@ -20,9 +21,6 @@ export class Venta {
     @Column({ default: 'completada' })
     estado: string;
 
-    @Column({ type: 'int', nullable: true })
-    id_cliente: number;
-
     @ManyToOne(() => SalidaStockGeneral, { nullable: true })
     @JoinColumn({ name: 'id_salida_stock_general' })
     salida_stock_general: SalidaStockGeneral;
@@ -37,4 +35,8 @@ export class Venta {
     @ManyToOne(() => User)
     @JoinColumn({ name: 'id_usuario' })
     id_usuario: User;
+
+    @ManyToOne(() => Cliente, { nullable: true })
+    @JoinColumn({ name: 'id_cliente' })
+    cliente: Cliente;
 }
