@@ -25,6 +25,7 @@ import { Vendedor } from '../vendedores/entities/vendedor.entity';
 import { ProductoPendienteDto } from './dto/product-pedido.dto';
 import { Product } from '../products/entities/product.entity';
 import { Between } from 'typeorm';
+import { TipoVenta } from './entities/tipo-venta.entity';
 
 @Injectable()
 export class StockService {
@@ -48,7 +49,23 @@ export class StockService {
     private vendedorRepository: Repository<Vendedor>,
     @InjectRepository(EnvioPedido)
     private envioPedidoRepo: Repository<EnvioPedido>,
+    @InjectRepository(TipoVenta)
+    private tipoVentaRepo: Repository<TipoVenta>,
   ) { }
+
+  async getTipoVenta(idEmpresa: number): Promise<{ id: number; nombre: string }[]> {
+    const tiposVenta = await this.tipoVentaRepo.find({
+      select: {
+        id: true,
+        nombre: true,
+      },
+      where: {
+        empresa: { id: idEmpresa },
+      },
+    });
+
+    return tiposVenta;
+  }
 
   async getMoviles(): Promise<MovilPedido[]> {
     return this.movilRepository.find({
@@ -313,6 +330,7 @@ export class StockService {
           id_empresa: { id: idEmpresa },
           fecha_venta: new Date(),
           id_usuario: { id: idUsuario },
+          tipo_venta: dto.tipo_origen || 'venta', // por defecto normal
           salida_stock_general: salidaStockGeneral, // No se usa en ventas
           iva: parseFloat((totalVenta.total / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
         });
@@ -939,6 +957,7 @@ export class StockService {
             id_cliente: pedido.idCliente,
             total_venta: pedido.total,
             estado: 'completada',
+            tipo_venta: 'pedido',
             metodo_pago: dto.metodo_pago || 'efectivo',
             id_empresa: { id: idEmpresa },
             id_usuario: { id: idUsuario },

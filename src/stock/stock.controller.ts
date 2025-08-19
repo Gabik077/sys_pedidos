@@ -122,6 +122,15 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.SysAdmin)
+  @Get('/tipo-venta')
+  getTipoVenta(
+    @User('id_empresa') idEmpresa: number,
+  ): Promise<{ id: number; nombre: string }[]> {
+    return this.stockService.getTipoVenta(idEmpresa);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('pedido')
   async registrarPedido(@Body() dto: CrearPedidoDto,

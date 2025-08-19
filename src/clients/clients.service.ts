@@ -5,6 +5,7 @@ import { Cliente } from './entities/cliente.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { Ciudad } from './entities/ciudad.entity';
+import { ZonaCliente } from './entities/zona-cliente';
 
 @Injectable()
 export class ClientsService {
@@ -13,6 +14,8 @@ export class ClientsService {
     private clientRepository: Repository<Cliente>,
     @InjectRepository(Ciudad)
     private ciudadRepository: Repository<Ciudad>,
+    @InjectRepository(ZonaCliente)
+    private zonaRepository: Repository<ZonaCliente>,
   ) { }
 
 
@@ -29,6 +32,20 @@ export class ClientsService {
     }
 
     return ciudades;
+  }
+
+  async getZonaCliente(idEmpresa: number): Promise<{ id: number; nombre: string }[]> {
+    const zonas = await this.zonaRepository.find({
+      select: {
+        id: true,
+        nombre: true,
+      },
+      where: {
+        id_empresa: { id: idEmpresa },
+      },
+    });
+
+    return zonas;
   }
 
   async updateClient(

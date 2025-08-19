@@ -39,4 +39,7 @@ export class Venta {
     @ManyToOne(() => Cliente, { nullable: true })
     @JoinColumn({ name: 'id_cliente' })
     cliente: Cliente;
+
+    @Column({ type: 'varchar', length: 30, nullable: true })
+    tipo_venta: string;
 }

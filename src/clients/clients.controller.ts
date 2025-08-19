@@ -35,6 +35,15 @@ export class ClientsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.SysAdmin)
+  @Get('zona-cliente')
+  getZonaCliente(
+    @User('id_empresa') idEmpresa: number,
+  ): Promise<{ id: number; nombre: string }[]> {
+    return this.clientsService.getZonaCliente(idEmpresa);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('/ciudades')
   async getCiudades(

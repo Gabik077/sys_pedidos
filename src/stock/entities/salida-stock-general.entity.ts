@@ -9,7 +9,7 @@ export class SalidaStockGeneral {
     id: number;
 
     @Column()
-    tipo_origen: 'venta' | 'ajuste' | 'devolucion_proveedor' | 'pedido' | 'otro';
+    tipo_origen: 'venta' | 'ajuste' | 'devolucion_proveedor' | 'pedido' | 'otro' | 'salón';
 
     @Column({ nullable: true })
     id_origen: number;
