@@ -11,6 +11,6 @@ export class TipoVenta {
     nombre: string;
 
     @ManyToOne(() => Empresa)
-    @JoinColumn({ name: 'id_empresa' })
+    @JoinColumn({ name: 'empresa' })
     empresa: Empresa;
 }
