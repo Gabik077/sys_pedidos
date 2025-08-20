@@ -96,6 +96,11 @@ export class ClientsService {
         return { status: 'error', message: `El Cliente ${existingClient.nombre} ${existingClient.apellido} ya tiene esa latitud y longitud ` };
       }
 
+      if (createClientDto.zona === 0) {
+        return { status: 'error', message: 'Debe seleccionar una zona de cliente' };
+
+      }
+
       const newClient = this.clientRepository.create({
         nombre: createClientDto.nombre,
         apellido: createClientDto.apellido,
@@ -106,6 +111,7 @@ export class ClientsService {
         lon: createClientDto.lon,
         ciudad: createClientDto.ciudad,
         email: createClientDto.email,
+        zona: { id: createClientDto.zona }, // Asignar la zona del cliente
         id_empresa: { id: idEmpresa },
         id_usuario: { id: idUsuario },
       });

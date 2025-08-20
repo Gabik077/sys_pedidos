@@ -11,6 +11,7 @@ import {
 
 import { User } from '../../users/entities/user.entity';
 import { Empresa } from '../../users/entities/empresa.entity';
+import { ZonaCliente } from './zona-cliente';
 
 
 @Entity('clientes')
@@ -55,4 +56,8 @@ export class Cliente {
     @ManyToOne(() => User)
     @JoinColumn({ name: 'id_usuario' })
     id_usuario: User;
+
+    @ManyToOne(() => ZonaCliente)
+    @JoinColumn({ name: 'id_zona' })
+    zona: ZonaCliente;
 }

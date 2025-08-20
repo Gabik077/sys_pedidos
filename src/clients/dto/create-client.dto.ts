@@ -60,4 +60,8 @@ export class CreateClientDto {
     @IsNumber()
     @IsOptional()
     id_usuario?: number;
+
+    @IsNumber()
+    @IsOptional()
+    zona?: number; // ID de la zona del cliente, opcional
 }
