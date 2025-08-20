@@ -62,6 +62,9 @@ export class StockService {
       where: {
         empresa: { id: idEmpresa },
       },
+      order: {
+        id: 'ASC',
+      },
     });
 
     return tiposVenta;
