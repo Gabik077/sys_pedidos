@@ -48,6 +48,7 @@ export class ClientsService {
     return zonas;
   }
 
+
   async updateClient(
     id: number,
     updateClientDto: UpdateClientDto,
@@ -71,6 +72,7 @@ export class ClientsService {
         direccion: updateClientDto.direccion,
         lat: updateClientDto.lat,
         lon: updateClientDto.lon,
+        zona: { id: updateClientDto.zona },
         ciudad: updateClientDto.ciudad,
         email: updateClientDto.email
       });
@@ -135,6 +137,7 @@ export class ClientsService {
 
   async getClienteById(id: number, idEmpresa: number, idUsuario: number): Promise<Cliente | null> {
     return this.clientRepository.findOne({
+      relations: ['zona'],
       where: { id, id_empresa: { id: idEmpresa } },
       select: {
         id: true,
