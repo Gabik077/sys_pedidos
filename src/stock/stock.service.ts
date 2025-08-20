@@ -342,7 +342,7 @@ export class StockService {
 
       if (dto.venta) { //si es venta a un cliente
         const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
-          id_cliente: dto.venta.id_cliente || null, // puede ser null si no es venta a cliente
+          cliente: { id: dto.venta.id_cliente || null }, // puede ser null si no es venta a cliente
           total_venta: totalVenta, // se calcula en el backend
           estado: 'completada',
           metodo_pago: dto.venta.metodo_pago || 'efectivo', // por defecto efectivo
@@ -973,7 +973,7 @@ export class StockService {
           if (!pedido.idCliente) throw new Error(`Pedido ${pedido.id} no tiene cliente asociado`);
 
           const venta = queryRunner.manager.create(Venta, {
-            id_cliente: pedido.idCliente,
+            cliente: { id: pedido.idCliente },
             total_venta: pedido.total,
             estado: 'completada',
             tipo_venta: 'pedido',
