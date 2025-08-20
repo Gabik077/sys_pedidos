@@ -309,13 +309,29 @@ export class StockService {
         id_cliente: dto.venta ? dto.venta.id_cliente : null, // puede ser null si no es venta a cliente
         observaciones: dto.observaciones
       });
+      dto.productos = dto.productos.map(p => ({
+        id_producto: p.id_producto,
+        cantidad: p.cantidad,
+      }));
 
+      //obtener ids y cantidad de la tabla productos
+      const productosDB = await this.productRepository.find(
+        {
+          where: { id: In(dto.productos.map(p => p.id_producto)) },
+          select: ['id', 'precio_venta'],
+        }
+      );
 
-      //obtener el total de la venta de la tabla productos
-      const totalVenta = await this.productRepository.createQueryBuilder('productos')
-        .select('SUM(productos.precio_venta)', 'total')
-        .where('productos.id IN (:...ids)', { ids: dto.productos.map(p => p.id_producto) })
-        .getRawOne();
+      if (productosDB.length !== dto.productos.length) {
+        throw new Error('Algunos productos no fueron encontrados en la base de datos');
+      }
+
+      // Calcular total multiplicando precio * cantidad
+      const totalVenta = dto.productos.reduce((acc, p) => {
+        const producto = productosDB.find(prod => prod.id === p.id_producto);
+        if (!producto) throw new Error(`Producto ${p.id_producto} no encontrado`);
+        return acc + (producto.precio_venta * p.cantidad);
+      }, 0);
 
       if (!totalVenta) {
         throw new Error('No se pudo calcular el total de la venta');
@@ -327,7 +343,7 @@ export class StockService {
       if (dto.venta) { //si es venta a un cliente
         const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
           id_cliente: dto.venta.id_cliente || null, // puede ser null si no es venta a cliente
-          total_venta: totalVenta.total, // se calcula en el backend
+          total_venta: totalVenta, // se calcula en el backend
           estado: 'completada',
           metodo_pago: dto.venta.metodo_pago || 'efectivo', // por defecto efectivo
           id_empresa: { id: idEmpresa },
@@ -335,7 +351,7 @@ export class StockService {
           id_usuario: { id: idUsuario },
           tipo_venta: dto.tipo_origen || 'venta', // por defecto normal
           salida_stock_general: salidaStockGeneral, // No se usa en ventas
-          iva: parseFloat((totalVenta.total / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
+          iva: parseFloat((totalVenta / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
         });
         const savedVenta = await queryRunner.manager.save(venta);
         dto.id_origen = savedVenta.id;
