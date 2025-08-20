@@ -382,7 +382,7 @@ export class StockService {
   async getPedidosPorEstado(estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado'): Promise<Pedido[]> {
     const pedidos = await this.pedidoRepository.find({
       where: { estado: estadoPedido }, // Filtrar solo pedidos pendientes
-      relations: ['cliente', 'detalles', 'detalles.producto'],
+      relations: ['cliente', 'detalles', 'detalles.producto', 'cliente.zona'],
       order: {
         fechaPedido: 'DESC',
       },
