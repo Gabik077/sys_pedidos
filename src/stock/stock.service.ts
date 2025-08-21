@@ -157,6 +157,7 @@ export class StockService {
       where: {
         id_empresa: { id: idEmpresa },
         fecha_venta: Between(startOfDay, endOfDay),
+        tipo_venta: In(['salón', 'venta', 'facturacion']), // Filtrar solo ventas normales
       },
       relations: [
         'salida_stock_general',
@@ -288,6 +289,10 @@ export class StockService {
     idUsuario: number
   ) {
 
+    if (dto.venta.id_cliente === 0) {
+      dto.venta.id_cliente = null;
+    }
+
     if (dto.productos.length === 0) {
       return { status: 'error', message: 'Debe agregar al menos un producto' };
     }
@@ -366,7 +371,10 @@ export class StockService {
         if (!stock) {
           throw new Error(`No hay stock para el producto ID ${producto.id_producto}`);
         }
+        if (stock.cantidad_disponible < producto.cantidad) {
+          throw new Error(`No hay suficiente stock para el producto ID ${producto.id_producto}`);
 
+        }
 
         stock.cantidad_disponible -= producto.cantidad;
         stock.fecha_actualizacion = new Date();
