@@ -954,7 +954,7 @@ export class StockService {
       });
 
       const productosEnPedidosPendientes = await this.getProductosEnPedidosPendientesById([...productoIds]);
-      console.log('Productos en pedidos pendientes:', productosEnPedidosPendientes);
+
       const stocks = await queryRunner.manager
         .getRepository(Stock)
         .createQueryBuilder("stock")
