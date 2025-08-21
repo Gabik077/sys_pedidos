@@ -144,14 +144,19 @@ export class StockService {
   }
 
 
-  async getVentas(idEmpresa: number, fecha: string): Promise<Venta[]> {
+  async getVentas(idEmpresa: number, fechaInicio: string, fechaFin: string): Promise<{ status: string; message?: string } | Venta[]> {
     // Fecha de hoy a las 00:00:00
-    const startOfDay = new Date(fecha);
+    const startOfDay = new Date(fechaInicio);
     startOfDay.setHours(0, 0, 0, 0);
 
     // Fecha de hoy a las 23:59:59
-    const endOfDay = new Date(fecha);
+    const endOfDay = new Date(fechaFin);
     endOfDay.setHours(23, 59, 59, 999);
+
+    //si ventas fecha inicio y fecha fin son mas de 31 dias
+    if (endOfDay.getTime() - startOfDay.getTime() > 31 * 24 * 60 * 60 * 1000) {
+      return { status: 'error', message: 'El rango de fechas no puede ser mayor a 31 días' };
+    }
 
     return this.dataSource.getRepository(Venta).find({
       where: {
