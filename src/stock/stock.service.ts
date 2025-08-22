@@ -27,6 +27,7 @@ import { Product } from '../products/entities/product.entity';
 import { Between } from 'typeorm';
 import { TipoVenta } from './entities/tipo-venta.entity';
 import { TipoPedido } from './entities/tipo-pedido.entity';
+import { PedidoSalonDto } from './dto/pedidoSalon.dto';
 
 @Injectable()
 export class StockService {
@@ -415,6 +416,133 @@ export class StockService {
 
         await queryRunner.manager.save(salida);
       }
+
+      await queryRunner.commitTransaction();
+      return { status: 'ok', message: 'Salida de stock registrada con éxito' };
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      return { status: 'error', message: `Error stock: ${error.message}` };
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async finalizarPedidoSalon(
+    dto: PedidoSalonDto,
+    idEmpresa: number,
+    idUsuario: number
+  ) {
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('SERIALIZABLE');
+
+    try {
+
+      //buscar pedido y actualizar estado a entregado
+      const pedido = await queryRunner.manager.findOne(Pedido, {
+        where: { id: dto.id_pedido },
+        relations: ['detalles', 'detalles.producto'],
+      });
+      if (!pedido) {
+        throw new Error(`Pedido con ID ${dto.id_pedido} no encontrado`);
+      }
+      if (pedido.estado === 'entregado') {
+        throw new Error(`El pedido con ID ${dto.id_pedido} ya fue entregado`);
+      }
+
+
+      const salidaGeneral = queryRunner.manager.create(SalidaStockGeneral, {
+        tipo_origen: "salón",
+        id_usuario: { id: idUsuario },
+        fecha: new Date(),
+        id_empresa: idEmpresa ? { id: idEmpresa } : null,
+        id_cliente: pedido.cliente ? pedido.cliente.id : null, // puede ser null si no es venta a cliente
+        observaciones: pedido.observaciones || 'Venta desde salón'
+      });
+      const productosPedido = pedido.detalles.map(p => ({
+        id_producto: p.idProducto,
+        cantidad: p.cantidad,
+      }));
+
+      //obtener ids y cantidad de la tabla productos
+      const productosDB = await this.productRepository.find(
+        {
+          where: { id: In(productosPedido.map(p => p.id_producto)) },
+          select: ['id', 'precio_venta'],
+        }
+      );
+
+      if (productosDB.length !== productosPedido.length) {
+        throw new Error('Algunos productos no fueron encontrados en la base de datos');
+      }
+
+      // Calcular total multiplicando precio * cantidad
+      const totalVenta = productosPedido.reduce((acc, p) => {
+        const producto = productosDB.find(prod => prod.id === p.id_producto);
+        if (!producto) throw new Error(`Producto ${p.id_producto} no encontrado`);
+        return acc + (producto.precio_venta * p.cantidad);
+      }, 0);
+
+      if (!totalVenta) {
+        throw new Error('No se pudo calcular el total de la venta');
+      }
+
+      const salidaStockGeneral = await queryRunner.manager.save(salidaGeneral); // 2-inserta en tabla salida_general
+
+
+      if (pedido.cliente) { //si es venta a un cliente
+        const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
+          cliente: { id: pedido.cliente.id || null }, // puede ser null si no es venta a cliente
+          total_venta: totalVenta, // se calcula en el backend
+          estado: 'completada',
+          metodo_pago: 'efectivo', // por defecto efectivo
+          id_empresa: { id: idEmpresa },
+          fecha_venta: new Date(),
+          id_usuario: { id: idUsuario },
+          tipo_venta: 'salón', // solo venta de salón
+          salida_stock_general: salidaStockGeneral, // No se usa en ventas
+          iva: parseFloat((totalVenta / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
+        });
+        await queryRunner.manager.save(venta);
+
+      }
+
+      for (const producto of productosPedido) {
+        const stock = await queryRunner.manager.findOne(Stock, {// 3-busca producto en tabla stock
+          where: { producto: { id: producto.id_producto } },
+          lock: { mode: 'pessimistic_write' }
+        });
+
+        if (!stock) {
+          throw new Error(`No hay stock para el producto ID ${producto.id_producto}`);
+        }
+        if (stock.cantidad_disponible < producto.cantidad) {
+          throw new Error(`No hay suficiente stock para el producto ID ${producto.id_producto}`);
+
+        }
+
+        stock.cantidad_disponible -= producto.cantidad;
+        stock.fecha_actualizacion = new Date();
+
+        await queryRunner.manager.save(stock);// 3-actualiza stock
+
+        const salida = queryRunner.manager.create(SalidaStock, {// 3-inserta en tabla salidas_stock (detalle de salida)
+          salida_general: salidaGeneral,
+          producto: { id: producto.id_producto },
+          fecha_salida: new Date(),
+          cantidad: producto.cantidad,
+          id_usuario: { id: idUsuario }
+        });
+
+        await queryRunner.manager.save(salida);
+      }
+
+
+      // Actualizar estado del pedido a "entregado"
+      pedido.estado = 'entregado';
+      await queryRunner.manager.save(pedido);
 
       await queryRunner.commitTransaction();
       return { status: 'ok', message: 'Salida de stock registrada con éxito' };

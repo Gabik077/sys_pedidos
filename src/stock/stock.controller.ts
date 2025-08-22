@@ -12,6 +12,8 @@ import { EstadoEnvioDto } from './dto/estado-envio.dto';
 import { User } from '../users/user.decorator';
 import { CreateMovilDto } from './dto/create-movil.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
+import { Pedido } from './entities/pedido.entity';
+import { PedidoSalonDto } from './dto/pedidoSalon.dto';
 
 @Controller('stock')
 export class StockController {
@@ -173,6 +175,16 @@ export class StockController {
     @User('userId') idUsuario: number
   ) {
     return this.stockService.registrarVentaYSalidaStock(dto, idEmpresa, idUsuario);
+  }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Post('finalizar-pedido-salon')
+  async finalizarPedidoSalon(
+    dto: PedidoSalonDto,
+    @User('id_empresa') idEmpresa: number,
+    @User('userId') idUsuario: number
+  ) {
+    return this.stockService.finalizarPedidoSalon(dto, idEmpresa, idUsuario);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
