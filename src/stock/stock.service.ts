@@ -460,7 +460,7 @@ export class StockService {
         id_usuario: { id: idUsuario },
         fecha: new Date(),
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
-        id_cliente: pedido.idCliente ? pedido.idCliente : null, // puede ser null si no es venta a cliente
+        id_cliente: pedido.idCliente || null, // puede ser null si no es venta a cliente
         observaciones: pedido.observaciones || 'Venta desde salón'
       });
       const productosPedido = pedido.detalles.map(p => ({
@@ -609,7 +609,7 @@ export class StockService {
 
       // Guardar el pedido
       const pedido = new Pedido();
-      pedido.idCliente = dto.pedido.id_cliente; // puede ser null si no es venta a cliente
+      pedido.idCliente = dto.pedido.id_cliente || null; // puede ser null si no es venta a cliente
       pedido.estado = dto.pedido.estado;
       pedido.total = totalCalculado; // se calcula en el back
       pedido.clienteNombre = dto.pedido.cliente_nombre;
