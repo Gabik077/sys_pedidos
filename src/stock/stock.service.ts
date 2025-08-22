@@ -28,6 +28,7 @@ import { Between } from 'typeorm';
 import { TipoVenta } from './entities/tipo-venta.entity';
 import { TipoPedido } from './entities/tipo-pedido.entity';
 import { PedidoSalonDto } from './dto/pedidoSalon.dto';
+import { Cliente } from 'src/clients/entities/cliente.entity';
 
 @Injectable()
 export class StockService {
@@ -421,6 +422,7 @@ export class StockService {
       return { status: 'ok', message: 'Salida de stock registrada con éxito' };
 
     } catch (error) {
+      console.error('Error al registrar venta y salida de stock:', error);
       await queryRunner.rollbackTransaction();
       return { status: 'error', message: `Error stock: ${error.message}` };
     } finally {
@@ -458,7 +460,7 @@ export class StockService {
         id_usuario: { id: idUsuario },
         fecha: new Date(),
         id_empresa: idEmpresa ? { id: idEmpresa } : null,
-        id_cliente: pedido.cliente ? pedido.cliente.id : null, // puede ser null si no es venta a cliente
+        id_cliente: pedido.idCliente ? pedido.idCliente : null, // puede ser null si no es venta a cliente
         observaciones: pedido.observaciones || 'Venta desde salón'
       });
       const productosPedido = pedido.detalles.map(p => ({
@@ -492,22 +494,21 @@ export class StockService {
       const salidaStockGeneral = await queryRunner.manager.save(salidaGeneral); // 2-inserta en tabla salida_general
 
 
-      if (pedido.cliente) { //si es venta a un cliente
-        const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
-          cliente: { id: pedido.cliente.id || null }, // puede ser null si no es venta a cliente
-          total_venta: totalVenta, // se calcula en el backend
-          estado: 'completada',
-          metodo_pago: 'efectivo', // por defecto efectivo
-          id_empresa: { id: idEmpresa },
-          fecha_venta: new Date(),
-          id_usuario: { id: idUsuario },
-          tipo_venta: 'salón', // solo venta de salón
-          salida_stock_general: salidaStockGeneral, // No se usa en ventas
-          iva: parseFloat((totalVenta / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
-        });
-        await queryRunner.manager.save(venta);
+      const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
+        cliente: { id: pedido.idCliente || null }, // puede ser null si no es venta a cliente
+        total_venta: totalVenta, // se calcula en el backend
+        estado: 'completada',
+        metodo_pago: 'efectivo', // por defecto efectivo
+        id_empresa: { id: idEmpresa },
+        fecha_venta: new Date(),
+        id_usuario: { id: idUsuario },
+        tipo_venta: 'salón', // solo venta de salón
+        salida_stock_general: salidaStockGeneral,
+        iva: parseFloat((totalVenta / 11).toFixed(2)) || 0.00, //IVA Paraguay 10% by default
+      });
+      await queryRunner.manager.save(venta);
 
-      }
+
 
       for (const producto of productosPedido) {
         const stock = await queryRunner.manager.findOne(Stock, {// 3-busca producto en tabla stock
@@ -548,6 +549,7 @@ export class StockService {
       return { status: 'ok', message: 'Salida de stock registrada con éxito' };
 
     } catch (error) {
+      console.error('Error al finalizar pedido salón:', error);
       await queryRunner.rollbackTransaction();
       return { status: 'error', message: `Error stock: ${error.message}` };
     } finally {
@@ -607,7 +609,7 @@ export class StockService {
 
       // Guardar el pedido
       const pedido = new Pedido();
-      pedido.idCliente = dto.pedido.id_cliente;
+      pedido.idCliente = dto.pedido.id_cliente; // puede ser null si no es venta a cliente
       pedido.estado = dto.pedido.estado;
       pedido.total = totalCalculado; // se calcula en el back
       pedido.clienteNombre = dto.pedido.cliente_nombre;

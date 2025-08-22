@@ -16,9 +16,11 @@ export class Pedido {
     @PrimaryGeneratedColumn({ name: 'id_pedido' })
     id: number;
 
+    //solo para guardar
     @Column({ name: 'id_cliente' })
     idCliente: number;
 
+    //solo para select
     @ManyToOne(() => Cliente)
     @JoinColumn({ name: 'id_cliente' })
     cliente: Cliente;

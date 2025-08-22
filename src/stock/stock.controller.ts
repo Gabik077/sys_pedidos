@@ -180,7 +180,7 @@ export class StockController {
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Post('finalizar-pedido-salon')
   async finalizarPedidoSalon(
-    dto: PedidoSalonDto,
+    @Body() dto: PedidoSalonDto,
     @User('id_empresa') idEmpresa: number,
     @User('userId') idUsuario: number
   ) {
