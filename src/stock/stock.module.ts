@@ -22,6 +22,7 @@ import { ComboHeader } from '../products/entities/combo-header.entity';
 import { ComboDetalle } from '../products/entities/combo-detalle.entity';
 import { Vendedor } from '../vendedores/entities/vendedor.entity';
 import { TipoVenta } from './entities/tipo-venta.entity';
+import { TipoPedido } from './entities/tipo-pedido.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature(
@@ -45,7 +46,8 @@ import { TipoVenta } from './entities/tipo-venta.entity';
       ComboHeader,
       ComboDetalle,
       Vendedor,
-      TipoVenta
+      TipoVenta,
+      TipoPedido
     ])],
   controllers: [StockController],
   providers: [StockService],

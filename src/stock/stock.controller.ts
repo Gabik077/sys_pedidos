@@ -122,12 +122,20 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.SysAdmin)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('/tipo-venta')
   getTipoVenta(
     @User('id_empresa') idEmpresa: number,
   ): Promise<{ id: number; nombre: string }[]> {
     return this.stockService.getTipoVenta(idEmpresa);
+  }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Get('/tipo-pedido')
+  getTipoPedido(
+    @User('id_empresa') idEmpresa: number,
+  ): Promise<{ id: number; nombre: string }[]> {
+    return this.stockService.getTipoPedido(idEmpresa);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

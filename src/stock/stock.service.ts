@@ -26,6 +26,7 @@ import { ProductoPendienteDto } from './dto/product-pedido.dto';
 import { Product } from '../products/entities/product.entity';
 import { Between } from 'typeorm';
 import { TipoVenta } from './entities/tipo-venta.entity';
+import { TipoPedido } from './entities/tipo-pedido.entity';
 
 @Injectable()
 export class StockService {
@@ -51,7 +52,25 @@ export class StockService {
     private envioPedidoRepo: Repository<EnvioPedido>,
     @InjectRepository(TipoVenta)
     private tipoVentaRepo: Repository<TipoVenta>,
+    @InjectRepository(TipoPedido)
+    private tipoPedidoRepo: Repository<TipoPedido>,
   ) { }
+
+  async getTipoPedido(idEmpresa: number): Promise<{ id: number; nombre: string }[]> {
+    const tiposPedido = await this.tipoPedidoRepo.find({
+      select: {
+        id: true,
+        nombre: true,
+      },
+      where: {
+        empresa: { id: idEmpresa },
+      },
+      order: {
+        id: 'ASC',
+      },
+    });
+    return tiposPedido;
+  }
 
   async getTipoVenta(idEmpresa: number): Promise<{ id: number; nombre: string }[]> {
     const tiposVenta = await this.tipoVentaRepo.find({
@@ -411,7 +430,7 @@ export class StockService {
   async getPedidosPorEstado(estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado'): Promise<Pedido[]> {
     const pedidos = await this.pedidoRepository.find({
       where: { estado: estadoPedido }, // Filtrar solo pedidos pendientes
-      relations: ['cliente', 'detalles', 'detalles.producto', 'cliente.zona'],
+      relations: ['cliente', 'detalles', 'detalles.producto', 'cliente.zona', 'tipoPedido'],
       order: {
         fechaPedido: 'DESC',
       },
@@ -467,6 +486,7 @@ export class StockService {
       pedido.observaciones = dto.observaciones;
       pedido.responsable = dto.pedido.chofer;
       pedido.empresa = idEmpresa;
+      pedido.tipoPedido = { id: dto.pedido.id_tipo_pedido } as TipoPedido; // ID del tipo de pedido
       pedido.id_usuario = idUsuario;
       pedido.fechaPedido = new Date();
       pedido.vendedorId = dto.vendedorId || 1; // default vendedor ID 1

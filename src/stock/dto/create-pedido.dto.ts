@@ -11,6 +11,7 @@ export class CrearPedidoDto {
         estado: 'pendiente' | 'entregado' | 'cancelado';
         chofer: string;
         id_movil?: number;
+        id_tipo_pedido?: number; // ID del tipo de pedido
     };
     productos: {
         id_producto: number;

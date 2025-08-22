@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Cliente } from '../../clients/entities/cliente.entity';
 import { DetallePedido } from './detalle-pedido.entity';
+import { TipoPedido } from './tipo-pedido.entity';
 
 @Entity('pedidos')
 export class Pedido {
@@ -55,5 +56,9 @@ export class Pedido {
     @OneToMany(() => DetallePedido, (detallePedido) => detallePedido.pedido)
     @JoinColumn({ name: 'id_pedido' })
     detalles: DetallePedido[];
+
+    @ManyToOne(() => TipoPedido)
+    @JoinColumn({ name: 'id_tipo_pedido' })
+    tipoPedido: TipoPedido;
 
 }
