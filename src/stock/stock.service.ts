@@ -486,7 +486,7 @@ export class StockService {
       pedido.observaciones = dto.observaciones;
       pedido.responsable = dto.pedido.chofer;
       pedido.empresa = idEmpresa;
-      pedido.tipoPedido = { id: dto.pedido.id_tipo_pedido } as TipoPedido; // ID del tipo de pedido
+      pedido.tipoPedido = { id: dto.pedido.tipo_pedido } as TipoPedido; // ID del tipo de pedido
       pedido.id_usuario = idUsuario;
       pedido.fechaPedido = new Date();
       pedido.vendedorId = dto.vendedorId || 1; // default vendedor ID 1
