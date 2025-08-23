@@ -586,6 +586,11 @@ export class StockService {
     try {
       let totalCalculado = 0;
 
+      if (dto.pedido.id_cliente === 0) {
+        dto.pedido.id_cliente = null; // Puede ser null si no es venta a cliente
+
+      }
+
       const productosEnPedidosPendientes = await this.getProductosEnPedidosPendientesById(dto.productos.map(p => p.id_producto));
 
       // Calcular total con precios reales
