@@ -62,6 +62,12 @@ export class StockController {
     return this.stockService.getVentas(idEmpresa, fechaInicio, fechaFin);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Get('ventas-pedidos')
+  getVentasPedidos(@User('id_empresa') idEmpresa: number, @Query('fechaInicio') fechaInicio: string, @Query('fechaFin') fechaFin: string) {
+    return this.stockService.getVentasPedidos(idEmpresa, fechaInicio, fechaFin);
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)

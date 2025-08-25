@@ -164,7 +164,40 @@ export class StockService {
     }
   }
 
+  async getVentasPedidos(idEmpresa: number, fechaInicio: string, fechaFin: string): Promise<{ status: string; message?: string } | Pedido[]> {
+    // Fecha de hoy a las 00:00:00
+    const startOfDay = new Date(fechaInicio);
+    startOfDay.setHours(0, 0, 0, 0);
+    // Fecha de hoy a las 23:59:59
+    const endOfDay = new Date(fechaFin);
+    endOfDay.setHours(23, 59, 59, 999);
+    //si ventas fecha inicio y fecha fin son mas de 31 dias
+    if (endOfDay.getTime() - startOfDay.getTime() > 31 * 24 * 60 * 60 * 1000) {
+      return { status: 'error', message: 'El rango de fechas no puede ser mayor a 31 días' };
+    }
 
+    const pedido = await this.pedidoRepository.find({
+      where: {
+        empresa: idEmpresa,
+        fechaPedido: Between(startOfDay, endOfDay),
+        estado: 'entregado',
+        tipoPedido: { id: 1 }, // Solo pedidos normales
+      },
+      relations: [
+        'detalles',
+        'detalles.producto',
+        'cliente',
+        'tipoPedido'
+      ],
+      order: {
+        id: 'DESC',
+      },
+    });
+
+
+    return pedido;
+  }
+  //VENTAS DE SALON
   async getVentas(idEmpresa: number, fechaInicio: string, fechaFin: string): Promise<{ status: string; message?: string } | Venta[]> {
     // Fecha de hoy a las 00:00:00
     const startOfDay = new Date(fechaInicio);
@@ -193,8 +226,7 @@ export class StockService {
       ],
       order: {
         id: 'DESC'
-      },
-      take: 100
+      }
     });
   }
 
