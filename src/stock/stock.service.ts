@@ -178,10 +178,10 @@ export class StockService {
 
     const pedido = await this.pedidoRepository.find({
       where: {
+        tipoPedido: { id: 1 },
         empresa: idEmpresa,
         fechaPedido: Between(startOfDay, endOfDay),
         estado: 'entregado',
-        tipoPedido: { id: 1 }, // Solo pedidos normales
       },
       relations: [
         'detalles',

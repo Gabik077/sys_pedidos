@@ -4,7 +4,7 @@ import { Entity, PrimaryGeneratedColumn, Column, Index, JoinColumn, ManyToOne } 
 @Entity('tipo_pedido')
 @Index(['nombre', 'empresa'], { unique: true }) // Define el índice único compuesto
 export class TipoPedido {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({ name: 'id' })
     id: number;
 
     @Column({ type: 'varchar', length: 30, nullable: false })
