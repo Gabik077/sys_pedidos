@@ -63,4 +63,7 @@ export class Pedido {
     @JoinColumn({ name: 'id_tipo_pedido' })
     tipoPedido: TipoPedido;
 
+    @Column({ name: 'fecha_entrega', type: 'timestamp', nullable: true })
+    fechaEntrega?: Date;
+
 }

@@ -575,6 +575,7 @@ export class StockService {
 
       // Actualizar estado del pedido a "entregado"
       pedido.estado = 'entregado';
+      pedido.fechaEntrega = new Date();
       await queryRunner.manager.save(pedido);
 
       await queryRunner.commitTransaction();
@@ -1246,6 +1247,7 @@ export class StockService {
         }
 
         pedido.estado = dto.estado;
+        pedido.fechaEntrega = new Date();
         await queryRunner.manager.save(pedido);
       }
 
