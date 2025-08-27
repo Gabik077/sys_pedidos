@@ -4,12 +4,15 @@ import { UpdateVendedorDto } from './dto/update-vendedor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vendedor } from './entities/vendedor.entity';
+import { Pedido } from 'src/stock/entities/pedido.entity';
 
 @Injectable()
 export class VendedorService {
   constructor(
     @InjectRepository(Vendedor)
     private readonly vendedorRepo: Repository<Vendedor>,
+    @InjectRepository(Pedido)
+    private readonly pedidoRepository: Repository<Pedido>,
   ) { }
 
 
@@ -35,6 +38,31 @@ export class VendedorService {
     }
 
   }
+
+
+  async getPedidosPorVendedor(idEmpresa: number, fechaInicio?: Date, fechaFin?: Date) {
+    const query = this.pedidoRepository
+      .createQueryBuilder('pedido')
+      .select('pedido.vendedorId', 'vendedorId')
+      .addSelect('pedido.vendedorNombre', 'vendedorNombre')
+      .addSelect('pedido.estado', 'estado')
+      .addSelect('COUNT(pedido.id)', 'cantidadPedidos')
+      .where('pedido.empresa = :idEmpresa', { idEmpresa })
+      .groupBy('pedido.vendedorId')
+      .addGroupBy('pedido.vendedorNombre')
+      .addGroupBy('pedido.estado');
+
+    if (fechaInicio && fechaFin) {
+      query.andWhere('pedido.fechaPedido BETWEEN :fechaInicio AND :fechaFin', {
+        fechaInicio,
+        fechaFin,
+      });
+    }
+
+    return query.getRawMany();
+  }
+
+
 
 
   async findAll(empresaId: number): Promise<{ status: string; data?: Vendedor[]; message?: string }> {

@@ -13,6 +13,8 @@ import { ComboDetalle } from './products/entities/combo-detalle.entity';
 import { ComboHeader } from './products/entities/combo-header.entity';
 import { VendedorModule } from './vendedores/vendedor.module';
 import { max, min } from 'class-validator';
+import { Pedido } from './stock/entities/pedido.entity';
+import { Stock } from './stock/entities/stock.entity.dto';
 
 
 @Module({
@@ -44,7 +46,7 @@ import { max, min } from 'class-validator';
           UnidadMedida,
           Proveedor,
           ComboHeader,
-          ComboDetalle
+          ComboDetalle,
         ],
       }),
     }),

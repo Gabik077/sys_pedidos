@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { VendedorService } from './vendedor.service';
 import { CreateVendedorDto } from './dto/create-vendedor.dto';
 import { UpdateVendedorDto } from './dto/update-vendedor.dto';
@@ -21,6 +21,17 @@ export class VendedorController {
     @User('userId') idUsuario: number
   ) {
     return this.vendedorService.create(createVendedorDto, idEmpresa, idUsuario);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.SysAdmin)
+  @Get('pedidos-por-vendedor')
+  getPedidosPorVendedor(
+    @User('id_empresa') idEmpresa: number,
+    @Query('fechaInicio') fechaInicio?: Date,
+    @Query('fechaFin') fechaFin?: Date
+  ) {
+    return this.vendedorService.getPedidosPorVendedor(idEmpresa, fechaInicio, fechaFin);
   }
 
   @Get()
