@@ -12,6 +12,7 @@ import { ClientsModule } from './clients/clients.module';
 import { ComboDetalle } from './products/entities/combo-detalle.entity';
 import { ComboHeader } from './products/entities/combo-header.entity';
 import { VendedorModule } from './vendedores/vendedor.module';
+import { max, min } from 'class-validator';
 
 
 @Module({
@@ -33,6 +34,11 @@ import { VendedorModule } from './vendedores/vendedor.module';
         database: config.get<string>('DB_NAME', 'test_db'),
         autoLoadEntities: true,
         synchronize: false, // true Solo para desarrollo
+        extra: {
+          max: 5, // Aumenta el número máximo de conexiones en el pool
+          min: 1, // Establece el número mínimo de conexiones en el pool
+          idleTimeoutMillis: 30000, // Cierra conexiones inactivas después de 30 segundos
+        },
         entities: [
           Product,
           UnidadMedida,
