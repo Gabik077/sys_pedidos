@@ -180,7 +180,7 @@ export class StockService {
       where: {
         tipoPedido: { id: 1 },
         empresa: idEmpresa,
-        fechaPedido: Between(startOfDay, endOfDay),
+        fechaEntrega: Between(startOfDay, endOfDay),
         estado: 'entregado',
       },
       relations: [
