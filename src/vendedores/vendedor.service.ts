@@ -57,10 +57,7 @@ export class VendedorService {
       .addGroupBy('pedido.vendedorNombre');
 
     if (fechaInicio && fechaFin) {
-      query.andWhere(
-        'COALESCE(pedido.fecha_entrega, pedido.fecha_pedido) BETWEEN :startOfDay AND :endOfDay',
-        { startOfDay, endOfDay },
-      );
+      query.andWhere('pedido.fecha_entrega BETWEEN :startOfDay AND :endOfDay', { startOfDay, endOfDay });
     }
 
     return query.getRawMany();
