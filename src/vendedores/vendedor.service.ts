@@ -45,25 +45,18 @@ export class VendedorService {
       .createQueryBuilder('pedido')
       .select('pedido.vendedorId', 'vendedorId')
       .addSelect('pedido.vendedorNombre', 'vendedorNombre')
-      .addSelect('pedido.estado', 'estado')
       .addSelect('COUNT(pedido.id)', 'cantidadPedidos')
+      .addSelect('SUM(pedido.total)', 'montoTotal')
       .where('pedido.empresa = :idEmpresa', { idEmpresa })
       .groupBy('pedido.vendedorId')
-      .addGroupBy('pedido.vendedorNombre')
-      .addGroupBy('pedido.estado');
+      .addGroupBy('pedido.vendedorNombre');
 
     if (fechaInicio && fechaFin) {
-      query.andWhere('pedido.fechaPedido BETWEEN :fechaInicio AND :fechaFin', {
-        fechaInicio,
-        fechaFin,
-      });
+      query.andWhere('pedido.fechaPedido BETWEEN :fechaInicio AND :fechaFin', { fechaInicio, fechaFin });
     }
 
     return query.getRawMany();
   }
-
-
-
 
   async findAll(empresaId: number): Promise<{ status: string; data?: Vendedor[]; message?: string }> {
     try {
