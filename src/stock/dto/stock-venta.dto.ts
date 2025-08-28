@@ -5,6 +5,7 @@ export class StockVentaDto {
     id_origen?: number;
     observaciones?: string;
     venta?: { id_cliente: number, metodo_pago?: string };
+    cliente_nombre?: string;
     total_venta: number;
     iva: number;
     productos: { id_producto: number; cantidad: number; }[]

@@ -42,4 +42,7 @@ export class Venta {
 
     @Column({ type: 'varchar', length: 30, nullable: true })
     tipo_venta: string;
+
+    @Column({ type: 'varchar', length: 50, nullable: true })
+    cliente_nombre?: string;
 }

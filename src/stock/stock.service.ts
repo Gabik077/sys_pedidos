@@ -411,6 +411,7 @@ export class StockService {
           metodo_pago: dto.venta.metodo_pago || 'efectivo', // por defecto efectivo
           id_empresa: { id: idEmpresa },
           fecha_venta: new Date(),
+          cliente_nombre: dto.cliente_nombre || null,
           id_usuario: { id: idUsuario },
           tipo_venta: dto.tipo_origen || 'venta', // por defecto normal
           salida_stock_general: salidaStockGeneral, // No se usa en ventas
@@ -532,6 +533,7 @@ export class StockService {
         estado: 'completada',
         metodo_pago: 'efectivo', // por defecto efectivo
         id_empresa: { id: idEmpresa },
+        cliente_nombre: pedido.clienteNombre || null,
         fecha_venta: new Date(),
         id_usuario: { id: idUsuario },
         tipo_venta: 'salón', // solo venta de salón

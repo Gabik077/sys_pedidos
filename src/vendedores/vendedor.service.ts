@@ -41,6 +41,10 @@ export class VendedorService {
 
 
   async getPedidosPorVendedor(idEmpresa: number, fechaInicio?: Date, fechaFin?: Date) {
+
+    const startOfDay = `${fechaInicio} 00:00:00`;
+    const endOfDay = `${fechaFin} 23:59:59`;
+
     const query = this.pedidoRepository
       .createQueryBuilder('pedido')
       .select('pedido.vendedorId', 'vendedorId')
@@ -52,7 +56,7 @@ export class VendedorService {
       .addGroupBy('pedido.vendedorNombre');
 
     if (fechaInicio && fechaFin) {
-      query.andWhere('pedido.fechaPedido BETWEEN :fechaInicio AND :fechaFin', { fechaInicio, fechaFin });
+      query.andWhere('pedido.fechaPedido BETWEEN :startOfDay AND :endOfDay', { startOfDay, endOfDay });
     }
 
     return query.getRawMany();
