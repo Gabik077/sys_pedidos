@@ -52,6 +52,7 @@ export class VendedorService {
       .addSelect('COUNT(pedido.id)', 'cantidadPedidos')
       .addSelect('SUM(pedido.total)', 'montoTotal')
       .where('pedido.empresa = :idEmpresa', { idEmpresa })
+      .andWhere('pedido.estado = :estado', { estado: 'entregado' })
       .groupBy('pedido.vendedorId')
       .addGroupBy('pedido.vendedorNombre');
 
