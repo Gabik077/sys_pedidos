@@ -17,7 +17,7 @@ export class SalidaStock {
     @JoinColumn({ name: 'id_producto' })
     producto: Product;
 
-    @Column()
+    @Column({ type: 'float4' })
     cantidad: number;
 
     @Column({ type: 'int', nullable: true })

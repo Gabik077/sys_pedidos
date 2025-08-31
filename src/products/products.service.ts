@@ -178,6 +178,7 @@ export class ProductsService {
         descripcion: true,
         precio_venta: true,
         codigo_barra: true,
+        marca: true
       },
     });
 
