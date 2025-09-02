@@ -347,7 +347,7 @@ export class StockService {
     idUsuario: number
   ) {
 
-    if (dto.venta.id_cliente === 0) {
+    if (dto.venta && dto.venta.id_cliente && dto.venta.id_cliente === 0) {
       dto.venta.id_cliente = null;
     }
 
@@ -402,10 +402,9 @@ export class StockService {
 
       const salidaStockGeneral = await queryRunner.manager.save(salidaGeneral); // 2-inserta en tabla salida_general
 
-
       if (dto.venta) { //si es venta a un cliente
         const venta = queryRunner.manager.create(Venta, { // 1-inserta en tabla venta
-          cliente: { id: dto.venta.id_cliente || null }, // puede ser null si no es venta a cliente
+          cliente: { id: dto.venta ? dto.venta.id_cliente : null }, // puede ser null si no es venta a cliente
           total_venta: totalVenta, // se calcula en el backend
           estado: 'completada',
           metodo_pago: dto.venta.metodo_pago || 'efectivo', // por defecto efectivo
@@ -449,6 +448,19 @@ export class StockService {
         });
 
         await queryRunner.manager.save(salida);
+
+        // Verificar si es combo
+        const productData = await this.productRepository.findOneBy({ id: producto.id_producto });
+        if (!productData) {
+          throw new Error(`Producto no encontrado`);
+        }
+        if (productData.is_combo) {//buscar combo si es un combo
+          const combo = await this.findComboById(productData.id);
+          //extraer productos del combo
+          for (const comboDetalle of combo.detalles) {
+            await this.restarStockProducto(queryRunner, comboDetalle.producto.id, comboDetalle.cantidad, comboDetalle.producto.nombre);
+          }
+        }
       }
 
       await queryRunner.commitTransaction();
