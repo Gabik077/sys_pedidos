@@ -27,7 +27,7 @@ export class DetallePedido {
     @JoinColumn({ name: 'id_producto' })
     producto: Product;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'float4' })
     cantidad: number;
 
     @Column({ name: 'precio_unitario', type: 'numeric', precision: 10, scale: 2 })

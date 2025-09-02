@@ -13,10 +13,10 @@ export class Stock {
     @JoinColumn({ name: 'id_producto' })
     producto: Product;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'float4' })
     cantidad_disponible: number;
 
-    @Column({ type: 'int', default: 0 })
+    @Column({ type: 'float4', default: 0 })
     cantidad_reservada: number;
 
     @UpdateDateColumn({ type: 'timestamp', nullable: true })

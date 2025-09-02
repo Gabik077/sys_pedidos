@@ -16,7 +16,7 @@ export class EntradaStock {
     @JoinColumn({ name: 'id_producto' })
     id_producto: Product;
 
-    @Column()
+    @Column({ type: 'float4' })
     cantidad: number;
 
     @CreateDateColumn()
