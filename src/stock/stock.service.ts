@@ -611,7 +611,7 @@ export class StockService {
       order: {
         fechaPedido: 'DESC',
       },
-      take: 100, // Limitar a los últimos 100 pedidos
+      take: 200, // Limitar a los últimos 100 pedidos
     });
 
     // Ordenar los detalles por nombre del producto
