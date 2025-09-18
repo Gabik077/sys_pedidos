@@ -615,12 +615,17 @@ export class StockService {
     });
 
     // Ordenar los detalles por nombre del producto
+    /*  for (const pedido of pedidos) {
+        pedido.detalles.sort((a, b) => {
+          const nombreA = a.producto?.nombre?.toLowerCase() || '';
+          const nombreB = b.producto?.nombre?.toLowerCase() || '';
+          return nombreA.localeCompare(nombreB);
+        });
+      }*/
+
+    // Ordenar detalle por orden
     for (const pedido of pedidos) {
-      pedido.detalles.sort((a, b) => {
-        const nombreA = a.producto?.nombre?.toLowerCase() || '';
-        const nombreB = b.producto?.nombre?.toLowerCase() || '';
-        return nombreA.localeCompare(nombreB);
-      });
+      pedido.detalles.sort((a, b) => a.id - b.id);
     }
 
     return pedidos;
