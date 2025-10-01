@@ -23,7 +23,7 @@ export class ClientsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.SysAdmin)
+  @Roles(Role.Admin, Role.SysAdmin, Role.Vendedor)
   @Post(':id')
   updateClient(
     @Param('id', ParseIntPipe) id: number,
@@ -35,7 +35,7 @@ export class ClientsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.SysAdmin)
+  @Roles(Role.Admin, Role.SysAdmin, Role.Vendedor)
   @Get('zona-cliente')
   getZonaCliente(
     @User('id_empresa') idEmpresa: number,

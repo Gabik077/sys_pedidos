@@ -34,4 +34,7 @@ export class User {
     @ManyToOne(() => Rol, (role) => role.id, { nullable: false })
     @JoinColumn({ name: "rol" }) // Define la clave foránea
     rol: Rol;
+
+    @Column({ name: "vendedor_id", type: "int", nullable: true })
+    vendedor_id?: number;
 }

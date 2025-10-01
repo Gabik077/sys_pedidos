@@ -604,9 +604,14 @@ export class StockService {
     }
   }
 
-  async getPedidosPorEstado(estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado'): Promise<Pedido[]> {
+  async getPedidosPorEstado(estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado', idVendedor: number): Promise<Pedido[]> {
+    //si idVendedor es null traer todos los pedidos
+    let filter = { estado: estadoPedido, vendedorId: idVendedor };
+    if (!idVendedor) {
+      delete filter.vendedorId;
+    }
     const pedidos = await this.pedidoRepository.find({
-      where: { estado: estadoPedido }, // Filtrar solo pedidos pendientes
+      where: filter, // Filtrar pedidos por estado
       relations: ['cliente', 'detalles', 'detalles.producto', 'cliente.zona', 'tipoPedido'],
       order: {
         fechaPedido: 'DESC',

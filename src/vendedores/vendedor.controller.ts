@@ -36,7 +36,7 @@ export class VendedorController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.SysAdmin)
+  @Roles(Role.Admin, Role.SysAdmin, Role.Vendedor)
   findAll(@User('id_empresa') idEmpresa: number) {
     return this.vendedorService.findAll(idEmpresa);
   }

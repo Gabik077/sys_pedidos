@@ -79,8 +79,8 @@ export class StockController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
   @Get('getPedidos')
-  async getPedidos(@Query('estadoPedido') estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
-    return this.stockService.getPedidosPorEstado(estadoPedido);
+  async getPedidos(@Query('estadoPedido') estadoPedido: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado', @User('vendedor_id') idVendedor: number): Promise<Pedido[]> {
+    return this.stockService.getPedidosPorEstado(estadoPedido, idVendedor);
   }
 
   @Get('getPedido/:id')
