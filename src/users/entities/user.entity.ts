@@ -37,4 +37,7 @@ export class User {
 
     @Column({ name: "vendedor_id", type: "int", nullable: true })
     vendedor_id?: number;
+
+    @Column({ name: "movil_id", type: "int", nullable: true })
+    movil_id?: number;
 }

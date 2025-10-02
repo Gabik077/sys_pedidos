@@ -3,4 +3,5 @@ export enum Role {
     Comprador = 'COMPRADOR',
     Vendedor = 'VENDEDOR',
     SysAdmin = 'SYSADMIN',
+    Repartidor = 'REPARTIDOR'
 }

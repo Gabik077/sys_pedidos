@@ -103,9 +103,9 @@ export class StockController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin)
+  @Roles(Role.Admin, Role.Vendedor, Role.SysAdmin, Role.Repartidor)
   @Get('getEnviosByMovil')
-  async getEnviosByMovil(@Query('estadoEnvio') estadoEnvio: string, @Query('movilId') movilId: number) {
+  async getEnviosByMovil(@Query('estadoEnvio') estadoEnvio: string, @User('movil_id') movilId: number) {
     return this.stockService.getEnviosByMovil(estadoEnvio, movilId);
   }
 

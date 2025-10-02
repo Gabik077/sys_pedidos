@@ -928,6 +928,9 @@ export class StockService {
   }
   async getEnviosByMovil(estadoEnvio: string, movilId: number): Promise<EnviosHeader[]> {
 
+    if (!movilId || movilId <= 0) {
+      return [];
+    }
 
     const headers = await this.headerRepo
       .createQueryBuilder('header')

@@ -33,7 +33,7 @@ export class AuthService {
             const validPassword = await bcrypt.compare(password, user.contrasena);
 
             if (validPassword) {
-                const payload = { sub: user.id, username: user.username, role: user.rol.descripcion, id_empresa: user.id_empresa, vendedor_id: user.vendedor_id };
+                const payload = { sub: user.id, username: user.username, role: user.rol.descripcion, id_empresa: user.id_empresa, vendedor_id: user.vendedor_id, movil_id: user.movil_id };
                 const token = await this.jwtService.sign(payload);
                 if (process.env.NODE_ENV !== 'production') {
                     console.log("Token generado:", token);
