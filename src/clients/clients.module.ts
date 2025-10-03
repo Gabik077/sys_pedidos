@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Ciudad } from './entities/ciudad.entity';
 import { ZonaCliente } from './entities/zona-cliente';
+import { LocationModel } from 'src/users/entities/location.entity';
 
 @Module({
   controllers: [ClientsController],

@@ -6,6 +6,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Rol } from './entities/role.entity';
 import * as bcrypt from 'bcrypt';
+import { LocationModel } from './entities/location.entity';
+import { CreateLocationDto } from 'src/users/dto/create-location.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +18,9 @@ export class UsersService {
     @InjectDataSource()
     readonly dataSource: DataSource,
     @InjectRepository(Rol)
-    private rolesRepository: Repository<Rol>
+    private rolesRepository: Repository<Rol>,
+    @InjectRepository(LocationModel)
+    private locationModelRepo: Repository<LocationModel>,
   ) { }
 
   async create(createUserDto: CreateUserDto, empresa: number) {
@@ -118,6 +122,19 @@ export class UsersService {
     }
 
     return { status: "ok", message: "borrado exitoso" };
+  }
+
+  async createLocation(dto: CreateLocationDto, idUsuario, idMovil: number, idEmpresa: number): Promise<LocationModel> {
+    const location = this.locationModelRepo.create({
+      lat: dto.lat,
+      lon: dto.lon,
+      idUsuario: idUsuario,
+      createdAt: new Date(),
+      idMovil: idMovil,
+      idEmpresa: idEmpresa,
+      datosEnvios: dto.datosEnvios
+    });
+    return this.locationModelRepo.save(location);
   }
 
 }

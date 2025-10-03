@@ -15,6 +15,7 @@ import { VendedorModule } from './vendedores/vendedor.module';
 import { max, min } from 'class-validator';
 import { Pedido } from './stock/entities/pedido.entity';
 import { Stock } from './stock/entities/stock.entity.dto';
+import { LocationModel } from './users/entities/location.entity';
 
 
 @Module({
@@ -47,6 +48,7 @@ import { Stock } from './stock/entities/stock.entity.dto';
           Proveedor,
           ComboHeader,
           ComboDetalle,
+          LocationModel,
         ],
       }),
     }),
