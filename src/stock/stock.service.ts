@@ -953,7 +953,8 @@ export class StockService {
       .leftJoinAndSelect('comboDetalles.producto', 'comboDetalleProducto')
       .where('header.estado = :estado', { estado: estadoEnvio })
       .andWhere('envioPedido.movil.id = :movil', { movil: movilId })
-      .orderBy('header.ordenEnvio', 'ASC')
+      .orderBy('header.fechaCreacion', 'DESC')
+      .addOrderBy('envioPedido.ordenEnvio', 'ASC')
       .addOrderBy('producto.id_categoria', 'ASC')
       .addOrderBy('producto.nombre', 'ASC')
       .getMany();
@@ -983,7 +984,8 @@ export class StockService {
       .leftJoinAndSelect('comboDetalles.producto', 'comboDetalleProducto')
 
       .where('header.estado = :estado', { estado: estadoEnvio })
-      .orderBy('header.ordenEnvio', 'ASC')
+      .orderBy('header.fechaCreacion', 'DESC')
+      .addOrderBy('envioPedido.ordenEnvio', 'ASC')
       .addOrderBy('producto.id_categoria', 'ASC')
       .addOrderBy('producto.nombre', 'ASC')
       .take(250)
