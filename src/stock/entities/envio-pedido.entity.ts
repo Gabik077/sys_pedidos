@@ -41,4 +41,10 @@ export class EnvioPedido {
     @ManyToOne(() => EnviosHeader)
     @JoinColumn({ name: 'envio_header_id' })
     envioHeader: EnviosHeader;
+
+    @Column({ type: 'float8', default: 0.0 })
+    lat: number;
+
+    @Column({ type: 'float8', default: 0.0 })
+    lon: number;
 }

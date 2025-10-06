@@ -14,6 +14,7 @@ import { CreateMovilDto } from './dto/create-movil.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { Pedido } from './entities/pedido.entity';
 import { PedidoSalonDto } from './dto/pedidoSalon.dto';
+import { FinalizarPedidoEnvioDto } from './dto/finalizar-pedido-envio.dto';
 
 @Controller('stock')
 export class StockController {
@@ -74,6 +75,14 @@ export class StockController {
   @Post('updateEstadoPedido/:idPedido')
   async updateEstadoPedido(@Param('idPedido') idPedido: number, @Body('estado') estado: 'pendiente' | 'entregado' | 'cancelado' | 'envio_creado') {
     return this.stockService.updateEstadoPedido(idPedido, estado);
+  }
+
+  //finaliza un pedido que fue entregado por un movil y cuando llega al ultimo pedido, finaliza el envio
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Repartidor, Role.SysAdmin)
+  @Post('finalizarPedidoYEnvio')
+  async finalizarPedidoYEnvio(@Body() dto: FinalizarPedidoEnvioDto, @User('id_empresa') idEmpresa: number, @User('userId') idUsuario: number) {
+    return this.stockService.finalizarPedidoYEnvio(dto, idEmpresa, idUsuario);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
