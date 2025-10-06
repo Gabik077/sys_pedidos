@@ -293,7 +293,6 @@ export class StockService {
         cantidad: p.cantidad,
 
       }));
-      console.log('productosPedido', productosPedido);
       //obtener ids y cantidad de la tabla productos
       const productosDB = await this.productRepository.find(
         {
@@ -301,7 +300,6 @@ export class StockService {
           select: ['id', 'precio_venta'],
         }
       );
-      console.log('productosDB', productosDB);
 
       if (productosDB.length === 0) {
         throw new Error('Algunos productos no fueron encontrados en la base de datos ');
@@ -362,6 +360,22 @@ export class StockService {
           cantidad: producto.cantidad,
           id_usuario: { id: idUsuario }
         });
+        // Verificar si es combo
+        const productData = await this.productRepository.findOneBy({ id: producto.id_producto });
+        if (!productData) {
+          throw new Error(`Producto no encontrado`);
+        }
+        if (productData.is_combo) {//verificar stock del combo
+          const combo = await this.findComboById(productData.id);
+          for (const comboDetalle of combo.detalles) {
+            await this.verificarStock(
+              queryRunner,
+              comboDetalle.producto.id,
+              comboDetalle.cantidad,
+              comboDetalle.producto.nombre
+            );
+          }
+        }
 
         await queryRunner.manager.save(salida);
       }
