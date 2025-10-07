@@ -1173,9 +1173,9 @@ export class StockService {
 
   async getEnviosPorEstado(estadoEnvio: string): Promise<EnviosHeader[]> {
 
-    let limit = 250;
-    if (estadoEnvio === 'entregado') {
-      limit = 500;
+    let limit = 300;
+    if (estadoEnvio === 'envio_creado' || estadoEnvio === 'pendiente') {
+      limit = 1000;
     }
 
     const headers = await this.headerRepo
@@ -1203,7 +1203,7 @@ export class StockService {
       .addOrderBy('envioPedido.ordenEnvio', 'ASC')
       .addOrderBy('producto.id_categoria', 'ASC')
       .addOrderBy('producto.nombre', 'ASC')
-      .take(limit)
+      //  .take(limit)
       .getMany();
 
     return headers;
