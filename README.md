@@ -64,3 +64,10 @@ Technologies:
 - Docker
 
 - Express
+
+## Licencia
+
+Copyright © 2025 Gabriel Cabrera.  
+Todos los derechos reservados.
+
+
